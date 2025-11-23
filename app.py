@@ -91,7 +91,17 @@ def init_db():
     """)
 
     conn.commit()
+
+    # 🔹 Ensure at least one admin user exists
+    c.execute("SELECT COUNT(*) FROM admins")
+    count = c.fetchone()[0]
     conn.close()
+
+    if count == 0:
+        # Use env vars if set, otherwise defaults
+        username = os.environ.get("ADMIN_USERNAME", "annapurna")
+        password = os.environ.get("ADMIN_PASSWORD", "Annapurnas213!")
+        create_admin_user(username, password)
 
 
 def get_db():
@@ -134,6 +144,47 @@ def admin_login():
             error = "Invalid username or password."
 
     return render_template("admin_login.html", error=error)
+
+
+@app.route("/admin/create-account", methods=["GET", "POST"])
+def create_account():
+    """Create new admin account. Allows if no admins exist, or if logged in admin."""
+    # Check if any admins exist
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM admins")
+    admin_count = c.fetchone()[0]
+    conn.close()
+    
+    # If admins exist, require login
+    if admin_count > 0 and not session.get("admin_logged_in"):
+        return redirect(url_for("admin_login", next=url_for("create_account")))
+    
+    error = None
+    success = None
+    
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        confirm_password = request.form.get("confirm_password", "")
+        
+        if not username:
+            error = "Username is required."
+        elif not password:
+            error = "Password is required."
+        elif len(password) < 6:
+            error = "Password must be at least 6 characters."
+        elif password != confirm_password:
+            error = "Passwords do not match."
+        else:
+            # Try to create the account
+            try:
+                create_admin_user(username, password)
+                success = f"Account '{username}' created successfully! You can now login."
+            except Exception as e:
+                error = f"Failed to create account: {str(e)}"
+    
+    return render_template("admin_create_account.html", error=error, success=success, is_first_account=(admin_count == 0))
 
 
 
@@ -453,7 +504,10 @@ def admin_payments():
     return jsonify({"status": "ok"})
 
 
+# Ensure DB and default admin exist when app imports (including on Render)
+init_db()
+
 if __name__ == "__main__":
-    init_db()
+    # local dev
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host="0.0.0.0", port=port)

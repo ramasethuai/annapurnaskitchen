@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Annapurna – Admin Login</title>
+  <title>Annapurna – Create Admin Account</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
@@ -61,34 +61,73 @@
       cursor: pointer;
       font-weight: 600;
     }
+    button:hover {
+      background: #d67a1f;
+    }
     .error {
       color: #c0392b;
       font-size: 0.8rem;
       margin-bottom: 6px;
+      padding: 8px;
+      background: #ffeaea;
+      border-radius: 8px;
+    }
+    .success {
+      color: #27ae60;
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+      padding: 8px;
+      background: #eafaf1;
+      border-radius: 8px;
+    }
+    .back-link {
+      margin-top: 16px;
+      text-align: center;
+    }
+    .back-link a {
+      color: #7a7067;
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+    .back-link a:hover {
+      color: #e6892e;
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>Annapurna Admin</h1>
-    <p class="small">Enter admin password to access the dashboard.</p>
+    <h1>Create Admin Account</h1>
+    {% if is_first_account %}
+    <p class="small">Create the first admin account for the system.</p>
+    {% else %}
+    <p class="small">Create a new admin account. You must be logged in as an admin.</p>
+    {% endif %}
     {% if error %}
     <div class="error">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+    <div class="success">{{ success }}</div>
     {% endif %}
     <form method="post">
         <div class="field">
           <label for="username">Username</label>
-          <input id="username" name="username" type="text" />
+          <input id="username" name="username" type="text" required autocomplete="username" />
         </div>
         <div class="field">
           <label for="password">Password</label>
-          <input id="password" name="password" type="password" />
+          <input id="password" name="password" type="password" required autocomplete="new-password" minlength="6" />
         </div>
-        <button type="submit">Login</button>
+        <div class="field">
+          <label for="confirm_password">Confirm Password</label>
+          <input id="confirm_password" name="confirm_password" type="password" required autocomplete="new-password" minlength="6" />
+        </div>
+        <button type="submit">Create Account</button>
       </form>
-      <div style="margin-top: 16px; text-align: center;">
-        <a href="{{ url_for('create_account') }}" style="color: #e6892e; text-decoration: none; font-size: 0.85rem;">Create New Admin Account</a>
+      <div class="back-link">
+        <a href="{{ url_for('admin_login') }}">← Back to Login</a>
       </div>
   </div>
 </body>
 </html>
+
