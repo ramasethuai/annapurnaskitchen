@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Annapurna's Kitchen – Weekly Menu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Marcellus&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #f9f4ea;
+      --bg-soft: #fdf8ee;
+      --card-bg: #ffffff;
+      --accent: #f28c28;         /* saffron */
+      --accent-soft: #ffe1b7;
+      --accent-dark: #c45b07;
+      --accent-green: #2e7d5b;   /* coriander leaf green */
+      --text-main: #2f2621;
+      --muted: #85776c;
+      --border: #e4d7c6;
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 14px 30px rgba(0, 0, 0, 0.07);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.45)),
+    url("{{ url_for('static', filename='kitchen-hero.png') }}") center/cover fixed no-repeat;
+  color: #2F2621;
+  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+    /* Mobile: lighter overlay, non-fixed for smooth scrolling */
+    @media (max-width: 768px) {
+    body {
+        background:
+        linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),
+        url("{{ url_for('static', filename='kitchen-hero.png') }}") center/cover no-repeat;
+        background-attachment: scroll;
+    }
+    .brand-text .tagline {
+      font-size: 0.85rem;
+    }
+  }
+
+
+    a {
+      color: var(--accent-dark);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+   /* outer wrapper should NOT cover the image */
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+  background: transparent;        /* important */
+}
+
+    /* ---------- HEADER ---------- */
+
+  header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+/* Admin pill in top-right */
+.header-pill {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(249, 244, 234, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  font-size: 0.78rem;
+  color: #85776C;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+}
+
+.header-pill a {
+  color: #C45B07;
+  font-weight: 500;
+}
+
+/*Default: big screens-  Main header glass panel */
+/* Main header glass panel – compact pill */
+/* ===========================
+   HEADER POSITIONING & STYLE
+   =========================== */
+
+/* Wrapper controls horizontal placement */
+.header-wrapper {
+  display: flex;
+  justify-content: flex-start;  /* left-align on large screens */
+  width: 100%;
+}
+
+/* Main glass header pill */
+.header-panel {
+  margin-top: 430px;            /* vertical position from top */
+  margin-left: 20px;            /* horizontal offset from left */
+  padding: 12px 20px 14px;
+  border-radius: 26px;
+  background: radial-gradient(
+      circle at top left,
+      rgba(255, 248, 236, 0.80) 0,
+      rgba(249, 244, 234, 0.88) 40%,
+      rgba(250, 246, 237, 0.86) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(14px);
+  max-width: 350px;             /* keep it compact so it doesn't span too wide */
+  width: 100%;
+}
+
+/* If you use a flex row for logo + text */
+.header-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.header-text-lines {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-line-2 {
+  font-size: 0.85rem;
+  color: #6f6157;
+}
+
+/* ------------- BREAKPOINTS ------------- */
+
+/* Large laptops / smaller desktops */
+@media (max-width: 1200px) {
+  .header-panel {
+    margin-top: 400px;
+    margin-left: 16px;
+    max-width: 330px;
+  }
+}
+
+/* Regular laptops & big tablets (landscape) */
+@media (max-width: 992px) {
+  .header-panel {
+    margin-top: 380px;
+    margin-left: 12px;
+    max-width: 320px;
+  }
+}
+
+/* Tablets / small laptops */
+@media (max-width: 768px) {
+  .header-wrapper {
+    justify-content: center;    /* center on tablet & below */
+  }
+  .header-panel {
+    margin-top: 360px;
+    margin-left: 0;
+    max-width: 300px;
+  }
+}
+
+/* Large phones */
+@media (max-width: 576px) {
+  .header-panel {
+    margin-top: 330px;
+    max-width: 280px;
+    padding: 10px 16px 12px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 400px) {
+  .header-panel {
+    margin-top: 310px;
+    max-width: 260px;
+  }
+}
+
+/* Keep logo and text on a tighter baseline */
+.logo-lockup {
+  display: flex;
+  align-items: center;       /* keep center */
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+/* Nudge the logo up slightly */
+.logo-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: conic-gradient(from 220deg, #FFB347, #FF7C2A, #FFC857);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255,255,255,0.9);
+  transform: translateY(-4px);   /* <- key tweak */
+}
+
+.logo-inner {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: radial-gradient(circle at top, #FFF9EE, #F4CF9F);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Marcellus", serif;
+  font-size: 1.7rem;
+  color: #3A2310;
+  letter-spacing: 0.1em;
+}
+
+.brand-text h1 {
+  margin: 0 0 2px;
+  font-family: "Marcellus", serif;
+  font-size: 2.2rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #23140A;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.7);
+}
+
+.brand-text p {
+  margin: 5px 0 0;
+  color: #6E5F54;
+  font-size: 0.9rem;
+}
+
+.brand-text .tagline {
+  margin-top: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-style: italic;
+  color: #B65C12;
+}
+
+.brand-text p {
+  margin: 6px 0 0;
+  color: #6E5F54;
+  font-size: 0.88rem;
+}
+
+
+/* Week range chip */
+.week-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(242, 140, 40, 0.10);
+  color: #C45B07;
+  font-size: 0.86rem;
+  margin-top: 12px;
+}
+
+.week-range .emoji {
+  font-size: 1rem;
+}
+
+/* Special note */
+#specialNote {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #2E7D5B;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(46, 125, 91, 0.10);
+  display: none;
+}
+
+
+    /* ---------- LAYOUT ---------- */
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.1fr);
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .header-pill {
+        position: static;
+        margin-top: 4px;
+      }
+    }
+
+  /* Cards glassy + more transparent */
+  .card {
+  background: rgba(255, 248, 236, 0.55);        /* more transparent */
+  border-radius: 22px;
+  padding: 20px 18px 20px;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+
+/* Soften the decorative overlay on cards */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(255, 215, 170, 0.12), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(195, 235, 210, 0.10), transparent 60%);
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+
+    .card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ---------- MENU COLUMN ---------- */
+
+    #menu {
+      background: linear-gradient(135deg, #ffffff, var(--bg-soft));
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .section-title h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title h2 span.emoji {
+      font-size: 1.2rem;
+    }
+
+    .section-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .day-card {
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 14px;
+      padding: 10px 12px 12px;
+      border: 1px solid rgba(232, 216, 197, 0.9);
+      margin-top: 10px;
+      backdrop-filter: blur(3px);
+    }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .day-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-dark);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .day-chip {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: rgba(46, 125, 91, 0.07);
+      color: var(--accent-green);
+    }
+
+    .day-badge {
+      font-size: 0.75rem;
+      color: #c0392b;
+      background: rgba(192, 57, 43, 0.08);
+      border-radius: var(--radius-pill);
+      padding: 2px 9px;
+      margin-left: 10px;
+      white-space: nowrap;
+    }
+
+    .day-closed {
+      opacity: 0.55;
+    }
+
+    .day-closed .qty-input {
+      background: #f2eee7;
+      cursor: not-allowed;
+    }
+
+    .day-closed .sizes {
+      pointer-events: none;
+    }
+
+    .dish {
+      border-top: 1px dashed #eadfce;
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+
+    .dish:first-of-type {
+      border-top: none;
+      padding-top: 2px;
+      margin-top: 4px;
+    }
+
+    .dish-name {
+      font-weight: 500;
+      margin-bottom: 2px;
+      font-size: 0.96rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dish-name::before {
+      content: "•";
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
+
+    .dish-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .sizes {
+      display: grid;
+      grid-template-columns: 2.2fr 1fr 1.1fr;
+      gap: 6px;
+      align-items: center;
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+    }
+
+    .size-label {
+      color: var(--muted);
+    }
+
+    .price {
+      font-weight: 600;
+      color: var(--accent-dark);
+    }
+
+    .qty-input {
+      width: 70px;
+      padding: 4px 7px;
+      padding-right: 25px; /* Make room for spinner arrows */
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.82rem;
+      text-align: right;
+      background: #fdf8f0;
+    }
+
+    /* Make spinner arrows always visible - Chrome, Safari, Edge */
+    .qty-input::-webkit-inner-spin-button,
+    .qty-input::-webkit-outer-spin-button {
+      opacity: 1 !important;
+      height: 20px;
+      width: 15px;
+      cursor: pointer;
+      position: relative;
+      display: block;
+    }
+
+    /* Ensure spinner buttons are always displayed (not just on hover) */
+    .qty-input:hover::-webkit-inner-spin-button,
+    .qty-input:hover::-webkit-outer-spin-button,
+    .qty-input:focus::-webkit-inner-spin-button,
+    .qty-input:focus::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button,
+    .qty-input::-webkit-outer-spin-button {
+      opacity: 1 !important;
+      visibility: visible;
+    }
+
+    /* Firefox - allow spinner buttons to show (don't hide them) */
+    .qty-input[type="number"] {
+      /* Remove -moz-appearance: textfield to show spinner buttons */
+    }
+
+    .qty-input:focus {
+      outline: 2px solid rgba(242, 140, 40, 0.4);
+      border-color: var(--accent);
+      background: #fffaf2;
+    }
+
+    .menu-footer-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .menu-footer-note span {
+      font-size: 0.95rem;
+    }
+
+    /* ---------- ORDER COLUMN ---------- */
+
+    aside.card {
+      background: linear-gradient(135deg, #ffffff, #fff3df);
+    }
+
+    .summary-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 1.02rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .summary-title span {
+      font-size: 1.2rem;
+    }
+
+    .field {
+      margin-bottom: 10px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.82rem;
+      margin-bottom: 3px;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+      resize: vertical;
+      background: #fffdf8;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      outline: 2px solid rgba(230, 137, 46, 0.35);
+      border-color: var(--accent);
+      background: #ffffff;
+    }
+
+    .field input.error {
+      border-color: #c0392b;
+      outline: 1px solid rgba(192, 57, 43, 0.5);
+      background: #fff3f0;
+    }
+
+    .field .error-text {
+      color: #c0392b;
+      font-size: 0.76rem;
+      margin-top: 2px;
+    }
+
+    .line {
+      height: 1px;
+      background: #e6ddcf;
+      margin: 10px 0 14px;
+    }
+
+    .how-to-order {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      line-height: 1.4;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 6px 10px;
+      border-radius: 10px;
+    }
+
+    .how-to-order strong {
+      color: var(--accent-dark);
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin: 8px 0 14px;
+      font-size: 0.9rem;
+    }
+
+    .total-row strong {
+      font-size: 1.05rem;
+      color: var(--accent-dark);
+    }
+
+    button.primary {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: var(--radius-pill);
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ffb347, #ff7c2a);
+      color: #3a2613;
+      font-weight: 700;
+      font-size: 0.98rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
+    }
+
+    button.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 15px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    button.primary:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14);
+    }
+
+    .small {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.03);
+      font-size: 0.78rem;
+      margin-top: 6px;
+      color: var(--muted);
+    }
+
+    .pill span {
+      font-size: 0.95rem;
+    }
+
+    /* ---------- ADMIN SECTION (CONFIG) ---------- */
+    #menu,
+    aside.card,
+    .admin-card {
+      margin-top: 30px;
+      background: transparent;
+    }
+
+    .admin-card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .admin-card h2 span {
+      font-size: 1.2rem;
+    }
+
+    .admin-card p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .admin-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    #adminMenuJson {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+      font-family: "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+      resize: vertical;
+      min-height: 220px;
+      white-space: pre;
+      background: #fdf8f0;
+    }
+
+    #adminMenuJson:focus {
+      outline: 2px solid rgba(230, 137, 46, 0.35);
+      border-color: var(--accent);
+      background: #ffffff;
+    }
+
+    .admin-field {
+      margin-bottom: 10px;
+    }
+
+    .admin-field label {
+      display: block;
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+      color: var(--muted);
+    }
+
+    .admin-field input,
+    .admin-field textarea {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      resize: vertical;
+      background: #fffdf8;
+    }
+
+    .admin-field input:focus,
+    .admin-field textarea:focus {
+      outline: 2px solid rgba(230, 137, 46, 0.35);
+      border-color: var(--accent);
+      background: #ffffff;
+    }
+
+    .cutoff-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 16px;
+      margin-top: 4px;
+      font-size: 0.8rem;
+    }
+
+    .cutoff-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .cutoff-row span {
+      color: var(--muted);
+    }
+
+    .cutoff-row input {
+      width: 80px;
+      padding: 4px 6px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+      background: #fffdf8;
+    }
+
+    .cutoff-row input:focus {
+      outline: 2px solid rgba(230, 137, 46, 0.35);
+      border-color: var(--accent);
+    }
+
+    .admin-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .admin-buttons button {
+      border-radius: var(--radius-pill);
+      border: none;
+      padding: 7px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: #f0e4d5;
+      color: #4b3d34;
+    }
+
+    .admin-buttons button.primary-admin {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ---------- DESKTOP WHATSAPP MODAL ---------- */
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.48);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .modal {
+      background: #ffffff;
+      max-width: 520px;
+      width: 90%;
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+      font-size: 0.9rem;
+      color: #312e2c;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .modal h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal h2 span {
+      font-size: 1.2rem;
+    }
+
+    .modal p {
+      margin: 4px 0 10px;
+      color: #6a625c;
+      font-size: 0.86rem;
+    }
+
+    #desktopOrderText {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #e0d8c8;
+      font-size: 0.85rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      resize: vertical;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+      background: #fdf8f0;
+    }
+
+    #desktopOrderText:focus {
+      outline: 2px solid rgba(230, 137, 46, 0.35);
+      border-color: #e6892e;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .modal-actions button {
+      border-radius: var(--radius-pill);
+      border: none;
+      cursor: pointer;
+      padding: 7px 16px;
+      font-size: 0.85rem;
+    }
+
+    #copyOrderBtn {
+      background: linear-gradient(135deg, #ffb347, #ff7c2a);
+      color: #362513;
+      font-weight: 600;
+    }
+
+    #closeModalBtn {
+      background: #f2ece3;
+      color: #555;
+    }
+
+    .modal-hint {
+      font-size: 0.78rem;
+      color: #948a82;
+    }
+    /* Stronger text contrast ONLY for order details */
+#order-details-card {
+  background: rgba(255, 248, 236, 0.65); /* slightly stronger backdrop */
+  backdrop-filter: blur(14px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* A subtle gradient behind text */
+#order-details-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.55) 0%,     /* top more white */
+      rgba(255, 255, 255, 0.35) 40%,    /* middle */
+      rgba(255, 255, 255, 0.22) 100%    /* bottom fades to transparent */
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+#order-details-card * {
+  position: relative;
+  z-index: 1;     /* text stays above gradient */
+}
+
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <header>
+        <div class="header-pill">
+          Admin: <a href="/admin" target="_blank">Open Dashboard</a>
+        </div>
+      
+        <div class="header-panel">
+          <!-- <div class="logo-lockup">
+            <div class="logo-circle">
+              <div class="logo-inner">AK</div>
+            </div> -->
+            <div class="brand-text">
+              <p> • Prosper / Frisco • Ph: 727-967-5878</p>
+            </div>        
+          <!-- </div> -->
+      
+          <div id="weekRange" class="week-range">
+            <span class="emoji">🗓️</span>
+            <span>Week Menu: Nov 17 – Nov 21</span>
+          </div>
+      
+          <div id="specialNote"></div>
+        </div>
+      </header>
+      
+
+    <div class="layout">
+      <!-- MENU COLUMN -->
+      <section id="menu" class="card">
+        <div class="section-title">
+          <h2><span class="emoji">🥘</span> Weekly Menu</h2>
+          <div class="section-sub">Choose your curries & portions</div>
+        </div>
+        <!-- Menu will be injected by JS -->
+        <div class="menu-footer-note">
+          <span>🍚</span>
+          <span>Rice options: White Rice · Brown Rice · Quinoa</span>
+        </div>
+      </section>
+
+      <!-- ORDER COLUMN -->
+      <aside class="card" id="order-details-card">
+        <div class="summary-title">
+          <span>📦</span> <span>Your Order Details</span>
+        </div>
+
+        <div class="field">
+          <label for="customerName">Name <span style="color:#c0392b">*</span></label>
+          <input id="customerName" type="text" placeholder="Your full name" />
+          <div id="errorName" class="error-text" style="display:none;">Name is required.</div>
+        </div>
+        <div class="field">
+          <label for="customerPhone">Phone <span style="color:#c0392b">*</span></label>
+          <input id="customerPhone" type="tel" placeholder="Your phone number" />
+          <div id="errorPhone" class="error-text" style="display:none;">Phone number is required.</div>
+        </div>
+
+        <div class="field">
+          <label for="pickupOption">Pickup / Delivery</label>
+          <input id="pickupOption" type="text" placeholder="e.g. Pickup at 6 PM" />
+        </div>
+
+        <div class="field">
+          <label for="notes">Notes (spice level, special requests, etc.)</label>
+          <textarea id="notes" rows="3"></textarea>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="how-to-order">
+          <strong>How to order:</strong><br />
+          1) Choose quantities for each curry you want.<br />
+          2) Fill in your name and phone number.<br />
+          3) Click “Send Order on WhatsApp” to send us your order.
+        </div>
+
+        <div class="total-row">
+          <span>Estimated total (for your reference)</span>
+          <strong id="totalAmount">$0.00</strong>
+        </div>
+
+        <button class="primary" id="whatsappBtn">
+          📲 Send Order on WhatsApp
+        </button>
+        <p class="small">
+          When you click the button, WhatsApp will open with your full order
+          pre-filled to <strong>+1 727-967-5878</strong>. Please review and tap
+          <em>Send</em> to confirm your order.
+        </p>
+
+        <p class="pill">
+          <span>💵</span>
+          <span>No online payment yet – you pay on pickup / delivery.</span>
+        </p>
+      </aside>
+    </div>
+        
+  </div>
+
+  <!-- Desktop WhatsApp popup -->
+  <div id="desktopModal" class="modal-backdrop" style="display:none;">
+    <div class="modal">
+      <h2><span>💻</span> Send Your Order via WhatsApp</h2>
+      <p>
+        On a computer, WhatsApp requires you to be logged in.<br />
+        To avoid that, please copy the order text below and send it from your phone
+        to <strong>+1 727-967-5878</strong> on WhatsApp.
+      </p>
+      <textarea id="desktopOrderText" rows="10"></textarea>
+      <div class="modal-actions">
+        <button id="copyOrderBtn" type="button">Copy Order Text</button>
+        <button id="closeModalBtn" type="button">Close</button>
+      </div>
+      <p class="modal-hint">
+        Tip: After copying, open WhatsApp on your phone, choose the chat for
+        Annapurna's Kitchen, and paste the text.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // ====== MENU CONFIG (default) ======
+    let MENU_DATA = {
+      "Monday": [
+        {
+          id: "carrot-rasam",
+          name: "Carrot Rasam",
+          description: "",
+          sizes: [{ label: "16 oz", price: 5 }]
+        },
+        {
+          id: "tomato-pappu",
+          name: "Tomato Pappu (Toor Dal + Tomato)",
+          description: "",
+          sizes: [{ label: "16 oz", price: 5 }]
+        },
+        {
+          id: "beans-carrot-fry",
+          name: "Beans & Carrot Fry",
+          description: "",
+          sizes: [
+            { label: "8 oz", price: 4 },
+            { label: "16 oz", price: 8 }
+          ]
+        }
+      ],
+      "Tuesday": [
+        {
+          id: "chana-saag",
+          name: "Chana Saag (Chickpeas + Spinach)",
+          description: "",
+          sizes: [
+            { label: "8 oz", price: 4 },
+            { label: "16 oz", price: 9 }
+          ]
+        },
+        {
+          id: "potato-fry",
+          name: "Potato Fry",
+          description: "",
+          sizes: [
+            { label: "8 oz", price: 3 },
+            { label: "16 oz", price: 6 }
+          ]
+        }
+      ],
+      "Wednesday": [
+        {
+          id: "tofu-burji",
+          name: "Tofu Burji",
+          description: "",
+          sizes: [
+            { label: "8 oz", price: 5 },
+            { label: "16 oz", price: 10 }
+          ]
+        },
+        {
+          id: "egg-pulusu",
+          name: "Egg Pulusu",
+          description: "",
+          sizes: [
+            { label: "8 oz (1 Egg)", price: 4 },
+            { label: "16 oz (2 Eggs)", price: 8 }
+          ]
+        }
+      ],
+      "Thursday": [
+        {
+          id: "mushroom-capsicum",
+          name: "Mushroom & Capsicum",
+          description: "",
+          sizes: [
+            { label: "8 oz", price: 6 },
+            { label: "16 oz", price: 12 }
+          ]
+        },
+        {
+          id: "baingan-bharta",
+          name: "Baingan Bharta (Smoked Eggplant)",
+          description: "",
+          sizes: [
+            { label: "8 oz", price: 5 },
+            { label: "16 oz", price: 8 }
+          ]
+        }
+      ],
+      "Friday": [
+        {
+          id: "chilli-paneer-pulav",
+          name: "Chilli Paneer Pulav",
+          description: "",
+          sizes: [{ label: "Single Portion", price: 10.99 }]
+        },
+        {
+          id: "kaju-butter-masala",
+          name: "Kaju Butter Masala",
+          description: "",
+          sizes: [
+            { label: "8 oz", price: 4 },
+            { label: "16 oz", price: 10 }
+          ]
+        }
+      ]
+    };
+
+    const WHATSAPP_NUMBER = "17279675878";
+    let globalNote = ""; // weekly special note
+	let DAY_CUTOFFS = {
+      Monday: "12:00",     // HH:MM in 24-hr format
+      Tuesday: "12:00",
+      Wednesday: "12:00",
+      Thursday: "12:00",
+      Friday: "12:00"
+      // Add Saturday/Sunday if you ever need
+    };
+
+    const weekRangeEl = document.getElementById("weekRange");
+    const specialNoteEl = document.getElementById("specialNote");
+
+    // ====== RENDER MENU ======
+    const menuContainer = document.getElementById("menu");
+
+        function renderMenu() {
+      menuContainer.innerHTML = "";
+      Object.entries(MENU_DATA).forEach(([day, dishes]) => {
+        const dayCard = document.createElement("div");
+        dayCard.className = "day-card";
+
+        // Check if this day is TODAY and we are past its cutoff
+        const closedForToday = isPastCutoffForDay(day);
+        if (closedForToday) {
+          dayCard.classList.add("day-closed");
+        }
+
+        const header = document.createElement("div");
+        header.className = "day-header";
+
+        const titleEl = document.createElement("div");
+        titleEl.className = "day-name";
+        titleEl.textContent = day;
+        header.appendChild(titleEl);
+
+        // If this is today and cutoff is passed, show the badge
+        if (closedForToday) {
+          const badge = document.createElement("div");
+          badge.className = "day-badge";
+          const cutoffText = DAY_CUTOFFS[day] || "";
+          badge.textContent = `Orders closed for today after ${cutoffText}`;
+          header.appendChild(badge);
+        }
+
+        dayCard.appendChild(header);
+
+        dishes.forEach((dish) => {
+          const dishDiv = document.createElement("div");
+          dishDiv.className = "dish";
+
+          const title = document.createElement("div");
+          title.className = "dish-name";
+          title.textContent = dish.name;
+          dishDiv.appendChild(title);
+
+          if (dish.description) {
+            const desc = document.createElement("div");
+            desc.className = "dish-desc";
+            desc.textContent = dish.description;
+            dishDiv.appendChild(desc);
+          }
+
+          dish.sizes.forEach((size, idx) => {
+            const row = document.createElement("div");
+            row.className = "sizes";
+
+            const label = document.createElement("div");
+            label.className = "size-label";
+            label.textContent = size.label;
+
+            const price = document.createElement("div");
+            price.className = "price";
+            price.textContent = `$${size.price.toFixed(2)}`;
+
+            const qty = document.createElement("input");
+            qty.type = "number";
+            qty.min = "0";
+            qty.value = "0";
+            qty.className = "qty-input";
+            qty.dataset.dishId = dish.id;
+            qty.dataset.sizeIndex = idx;
+
+            row.appendChild(label);
+            row.appendChild(price);
+            row.appendChild(qty);
+            dishDiv.appendChild(row);
+          });
+
+          dayCard.appendChild(dishDiv);
+        });
+
+        menuContainer.appendChild(dayCard);
+      });
+    }
+
+
+    renderMenu();
+
+    // ====== ORDER / TOTAL LOGIC ======
+    function getSelections() {
+      const inputs = document.querySelectorAll(".qty-input");
+      const items = [];
+
+      inputs.forEach((input) => {
+        const qty = parseInt(input.value, 10);
+        if (!qty || qty <= 0) return;
+
+        const dishId = input.dataset.dishId;
+        const sizeIndex = parseInt(input.dataset.sizeIndex, 10);
+
+        let foundDish = null;
+        let foundDay = null;
+        for (const [day, dishes] of Object.entries(MENU_DATA)) {
+          dishes.forEach((d) => {
+            if (d.id === dishId) {
+              foundDish = d;
+              foundDay = day;
+            }
+          });
+        }
+        if (!foundDish) return;
+
+        const size = foundDish.sizes[sizeIndex];
+        const lineTotal = size.price * qty;
+
+        items.push({
+          day: foundDay,
+          name: foundDish.name,
+          sizeLabel: size.label,
+          unitPrice: size.price,
+          qty,
+          lineTotal
+        });
+      });
+
+      return items;
+    }
+
+    function updateTotal() {
+      const items = getSelections();
+      const total = items.reduce((sum, item) => sum + item.lineTotal, 0);
+      document.getElementById("totalAmount").textContent =
+        "$" + total.toFixed(2);
+    }
+
+    document.addEventListener("input", (e) => {
+      if (e.target.classList.contains("qty-input")) {
+        updateTotal();
+      }
+    });
+
+    // ====== VALIDATION ======
+    function clearValidation() {
+      ["customerName", "customerPhone"].forEach((id) => {
+        const input = document.getElementById(id);
+        input.classList.remove("error");
+      });
+      ["errorName", "errorPhone"].forEach((id) => {
+        document.getElementById(id).style.display = "none";
+      });
+    }
+
+    function validateCustomerInfo() {
+      clearValidation();
+      const nameInput = document.getElementById("customerName");
+      const phoneInput = document.getElementById("customerPhone");
+
+      let valid = true;
+      if (!nameInput.value.trim()) {
+        nameInput.classList.add("error");
+        document.getElementById("errorName").style.display = "block";
+        valid = false;
+      }
+      if (!phoneInput.value.trim()) {
+        phoneInput.classList.add("error");
+        document.getElementById("errorPhone").style.display = "block";
+        valid = false;
+      }
+      return valid;
+    }
+
+    // ====== BUILD WHATSAPP MESSAGE ======
+    function buildWhatsAppMessage() {
+      const name = document.getElementById("customerName").value.trim();
+      const phone = document.getElementById("customerPhone").value.trim();
+      const pickup = document.getElementById("pickupOption").value.trim();
+      const notes = document.getElementById("notes").value.trim();
+
+      const items = getSelections();
+      if (items.length === 0) {
+        alert("Please select at least one item before placing an order.");
+        return null;
+      }
+
+      let total = items.reduce((sum, item) => sum + item.lineTotal, 0);
+
+      let text = `Annapurna's Kitchen – New Order%0A%0A`;
+
+      if (name) text += `Name: ${name}%0A`;
+      if (phone) text += `Phone: ${phone}%0A`;
+      if (pickup) text += `Pickup/Delivery: ${pickup}%0A`;
+      text += `%0AItems:%0A`;
+
+      const itemsByDay = {};
+      items.forEach((item) => {
+        if (!itemsByDay[item.day]) itemsByDay[item.day] = [];
+        itemsByDay[item.day].push(item);
+      });
+
+      Object.keys(itemsByDay).forEach((day) => {
+        text += `%0A${day}:%0A`;
+        itemsByDay[day].forEach((item) => {
+          text += `- ${item.name} (${item.sizeLabel}) × ${item.qty} = $${item.lineTotal.toFixed(
+            2
+          )}%0A`;
+        });
+      });
+
+      text += `%0AEstimated Total: $${total.toFixed(2)}%0A`;
+
+      if (globalNote) {
+        text += `%0AWeekly Note:%0A${encodeURIComponent(globalNote)}%0A`;
+      }
+
+      if (notes) {
+        text += `%0ACustomer Notes:%0A${encodeURIComponent(notes)}%0A`;
+      }
+
+      text += `%0A(Generated from weekly menu site – no online payment yet)`;
+
+      return text;
+    }
+
+    // ====== DEVICE & MODAL HELPERS ======
+	
+    function getTodayDayName() {
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const todayIndex = new Date().getDay();
+      return days[todayIndex];
+    }
+	
+	function parseCutoffTime(timeStr) {
+      if (!timeStr) return null;
+      const parts = timeStr.split(":");
+      if (parts.length < 1) return null;
+      const hour = parseInt(parts[0], 10);
+      const minute = parts.length > 1 ? parseInt(parts[1], 10) : 0;
+      if (isNaN(hour) || isNaN(minute)) return null;
+      if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+      return { hour, minute };
+    }
+
+    function isPastCutoffForDay(dayName) {
+      // Only enforce cutoff for "today"
+      const todayName = getTodayDayName();
+      if (dayName !== todayName) return false;
+
+      const cutoffStr = DAY_CUTOFFS[dayName];
+      const cutoff = parseCutoffTime(cutoffStr);
+      if (!cutoff) return false; // no cutoff set → no restriction
+
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+
+      if (h > cutoff.hour) return true;
+      if (h === cutoff.hour && m > cutoff.minute) return true;
+      return false;
+    }
+
+    function isMobileDevice() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    }
+
+    function showDesktopModal(orderText) {
+      const backdrop = document.getElementById("desktopModal");
+      const textarea = document.getElementById("desktopOrderText");
+      textarea.value = orderText;
+      backdrop.style.display = "flex";
+    }
+
+    function hideDesktopModal() {
+      const backdrop = document.getElementById("desktopModal");
+      backdrop.style.display = "none";
+    }
+
+    document.getElementById("closeModalBtn").addEventListener("click", hideDesktopModal);
+
+    document.getElementById("copyOrderBtn").addEventListener("click", function () {
+      const textarea = document.getElementById("desktopOrderText");
+      textarea.select();
+      textarea.setSelectionRange(0, 99999);
+      try {
+        document.execCommand("copy");
+        alert("Order text copied! Now open WhatsApp on your phone and paste it.");
+      } catch (e) {
+        alert("Please press Ctrl+C (Cmd+C on Mac) to copy.");
+      }
+    });
+
+    // ====== WHATSAPP BUTTON HANDLER ======
+ document
+  .getElementById("whatsappBtn")
+  .addEventListener("click", async function () {
+    // 1) Validate required fields
+    if (!validateCustomerInfo()) {
+      return;
+    }
+
+    // 2) Get selected items
+    const items = getSelections();
+    if (items.length === 0) {
+      alert("Please select at least one item before placing an order.");
+      return;
+    }
+
+    // 3) Check per-day cutoff for today's items
+    const blockedDays = new Set();
+    items.forEach(item => {
+      if (isPastCutoffForDay(item.day)) {
+        blockedDays.add(item.day);
+      }
+    });
+    if (blockedDays.size > 0) {
+      const list = Array.from(blockedDays).join(", ");
+      alert(
+        `Orders for today's menu are closed after the cutoff time.\n\n` +
+        `You selected items from: ${list}.\n` +
+        `Please remove those items or order earlier next time.`
+      );
+      return;
+    }
+
+    // 4) Prepare payload for backend
+    const name = document.getElementById("customerName").value.trim();
+    const phone = document.getElementById("customerPhone").value.trim();
+    const pickup = document.getElementById("pickupOption").value.trim();
+    const notes = document.getElementById("notes").value.trim();
+
+    let total = items.reduce((sum, item) => sum + item.lineTotal, 0);
+
+    const orderPayload = {
+      name,
+      phone,
+      pickupOption: pickup,
+      notes,
+      items,
+      total
+    };
+
+    // 5) Save order to backend first
+    try {
+      const res = await fetch("/api/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error("Order save failed:", err);
+        alert("Something went wrong while saving your order. Please try again.");
+        return;
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Could not reach the server to save your order. Please try again.");
+      return;
+    }
+
+    // 6) Build WhatsApp message like before
+    const msg = buildWhatsAppMessage();
+    if (!msg) return;
+
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`;
+
+    if (isMobileDevice()) {
+      window.open(url, "_blank");
+    } else {
+      const plainText = decodeURIComponent(msg.replace(/%0A/g, "\n"));
+      showDesktopModal(plainText);
+    }
+  });
+
+    // ====== ADMIN SECTION ======
+    const adminMenuJsonEl = document.getElementById("adminMenuJson");
+    const adminWeekRangeEl = document.getElementById("adminWeekRange");
+    const adminSpecialNoteEl = document.getElementById("adminSpecialNote");
+	const cutoffInputs = {
+      Monday: document.getElementById("cutoff_Monday"),
+      Tuesday: document.getElementById("cutoff_Tuesday"),
+      Wednesday: document.getElementById("cutoff_Wednesday"),
+      Thursday: document.getElementById("cutoff_Thursday"),
+      Friday: document.getElementById("cutoff_Friday")
+    };
+
+
+    function loadAdminFieldsFromCurrent() {
+      adminMenuJsonEl.value = JSON.stringify(MENU_DATA, null, 2);
+      adminWeekRangeEl.value = weekRangeEl.textContent;
+      adminSpecialNoteEl.value = globalNote;
+
+      // Load cutoff times
+      Object.keys(cutoffInputs).forEach(day => {
+        cutoffInputs[day].value = DAY_CUTOFFS[day] || "";
+      });
+    }
+
+
+    loadAdminFieldsFromCurrent();
+
+        function applyAdminChanges() {
+      // Update MENU_DATA from JSON
+      let newData;
+      try {
+        newData = JSON.parse(adminMenuJsonEl.value);
+      } catch (e) {
+        alert("Menu JSON is invalid. Please fix the JSON formatting.");
+        return;
+      }
+      MENU_DATA = newData;
+      renderMenu();
+      updateTotal(); // reset total
+
+      // Update week range
+      const wr = adminWeekRangeEl.value.trim();
+      if (wr) {
+        weekRangeEl.textContent = wr;
+      }
+
+      // Update special note
+      globalNote = adminSpecialNoteEl.value.trim();
+      if (globalNote) {
+        specialNoteEl.textContent = globalNote;
+        specialNoteEl.style.display = "inline-block";
+      } else {
+        specialNoteEl.textContent = "";
+        specialNoteEl.style.display = "none";
+      }
+
+      // Update day cutoffs
+      Object.keys(cutoffInputs).forEach(day => {
+        const val = cutoffInputs[day].value.trim();
+        DAY_CUTOFFS[day] = val; // empty string = no cutoff
+      });
+
+      alert("Admin changes applied (not saved to server).");
+    }
+
+
+    document.getElementById("adminApply").addEventListener("click", applyAdminChanges);
+    document.getElementById("adminReset").addEventListener("click", loadAdminFieldsFromCurrent);
+  </script>
+</body>
+</html>

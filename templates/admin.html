@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Annapurna – Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Marcellus&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-card: rgba(249, 244, 234, 0.94);
+      --accent: #f28c28;
+      --accent-dark: #c45b07;
+      --accent-green: #2e7d5b;
+      --text-main: #2f2621;
+      --muted: #7a7067;
+      --border-soft: rgba(255, 255, 255, 0.8);
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 22px 55px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.6)),
+        url("{{ url_for('static', filename='kitchen-hero.png') }}") center 20% / cover fixed no-repeat;
+      color: var(--text-main);
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    /* Mobile: softer overlay + non-fixed scrolling BG */
+    @media (max-width: 768px) {
+      body {
+        background:
+          linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.5)),
+          url("{{ url_for('static', filename='kitchen-hero.png') }}") center 22% / cover no-repeat;
+        background-attachment: scroll;
+      }
+    }
+
+    a {
+      color: var(--accent-dark);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 22px 16px 40px;
+    }
+
+    .shell {
+      margin-top: 270px; /* <-- main desktop spacing so lady is visible */
+      background: radial-gradient(
+          circle at top left,
+          rgba(255, 243, 220, 0.98) 0,
+          rgba(249, 244, 234, 0.96) 40%,
+          rgba(250, 246, 237, 0.94) 100%
+        );
+      border-radius: 28px;
+      padding: 18px 18px 24px;
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(14px);
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: conic-gradient(from 220deg, #ffb347, #ff7c2a, #ffc857);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.35);
+      border: 2px solid rgba(255,255,255,0.9);
+    }
+    .logo-inner {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: radial-gradient(circle at top, #fff9ee, #f4cf9f);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Marcellus", serif;
+      font-size: 1.4rem;
+      color: #3a2310;
+      letter-spacing: 0.1em;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Marcellus", serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #23140a;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .admin-meta {
+      text-align: right;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .admin-meta .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: inline-flex;
+      gap: 6px;
+      margin: 10px 0 14px;
+      background: rgba(255, 255, 255, 0.75);
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+    }
+
+    .tab-button {
+      border: none;
+      background: transparent;
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: #6e5f54;
+    }
+    .tab-button.active {
+      background: linear-gradient(135deg, #ffb347, #ff7c2a);
+      color: #3a2613;
+      font-weight: 600;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* CSV controls */
+    .csv-controls {
+      margin: 6px 0 14px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .csv-controls label {
+      margin-right: 4px;
+    }
+    #csvMonth {
+      padding:4px 6px;
+      border-radius:8px;
+      border:1px solid #d9cebf;
+      font-size:0.85rem;
+      background:#fffdf8;
+    }
+    #downloadCsvBtn {
+      border-radius: var(--radius-pill);
+      border:none;
+      padding:6px 10px;
+      font-size:0.8rem;
+      cursor:pointer;
+      background: #f0e4d5;
+      color:#4a4037;
+    }
+    #downloadCsvBtn:hover {
+      background:#e5d6c2;
+    }
+    #csvStatus {
+      font-size:0.78rem;
+      color: var(--muted);
+    }
+
+    h2 {
+      font-size: 1.05rem;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    h2 span.icon {
+      font-size: 1.1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    th, td {
+      border: 1px solid #ded2c4;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    th {
+      background: #f0e4d5;
+      font-weight: 600;
+      color:#574534;
+    }
+    tr:nth-child(even) {
+      background: #fbf7f1;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      font-size: 0.72rem;
+    }
+    .badge.green {
+      background: #e3f6e5;
+      color: #207b32;
+    }
+    .badge.red {
+      background: #fde5e1;
+      color: #b1372b;
+    }
+
+    .flex {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .card-panel {
+      background: rgba(255, 255, 255, 0.94);
+      border-radius: 18px;
+      padding: 12px 14px 14px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+    }
+
+    .small {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input, textarea, button {
+      font-family: inherit;
+    }
+
+    .field {
+      margin-bottom: 8px;
+    }
+    .field label {
+      font-size: 0.8rem;
+      display: block;
+      margin-bottom: 3px;
+      color: var(--muted);
+    }
+    .field input, .field textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid #d9cebf;
+      box-sizing: border-box;
+      font-size: 0.85rem;
+      background: #fffdf8;
+    }
+    .field input:focus,
+    .field textarea:focus {
+      outline: 2px solid rgba(242, 140, 40, 0.35);
+      border-color: var(--accent);
+      background: #ffffff;
+    }
+
+    button.primary {
+      border-radius: var(--radius-pill);
+      border: none;
+      background: linear-gradient(135deg, #ffb347, #ff7c2a);
+      color: #3a2613;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+    }
+    button.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 25px rgba(0,0,0,0.22);
+    }
+    button.primary:active {
+      transform: translateY(0);
+      box-shadow: 0 7px 14px rgba(0,0,0,0.15);
+    }
+
+    button.secondary {
+      border-radius: var(--radius-pill);
+      border: none;
+      background: #f2ece3;
+      color: #4a4037;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    button.secondary:hover {
+      background:#e5dacb;
+    }
+
+    pre {
+      background: #f9f5ef;
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 0.76rem;
+      overflow-x: auto;
+      margin-top: 4px;
+    }
+
+    #ordersList > div {
+      margin-bottom: 8px;
+    }
+
+    #paymentStatus {
+      min-height: 1.2em;
+    }
+
+    /* -------- Responsive spacing so lady's face stays visible -------- */
+
+    @media (max-width: 1200px) {
+      .shell { margin-top: 250px; }
+    }
+
+    @media (max-width: 1024px) {
+      .shell { margin-top: 230px; }
+    }
+
+    @media (max-width: 900px) {
+      .shell { margin-top: 200px; }
+    }
+
+    @media (max-width: 768px) {
+      .shell { margin-top: 180px; }
+    }
+
+    @media (max-width: 700px) {
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      .shell {
+        padding: 14px 12px 18px;
+        border-radius: 22px;
+        margin-top: 160px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .shell { margin-top: 140px; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="shell">
+      <header>
+        <div class="brand">
+          <div class="logo-circle">
+            <div class="logo-inner">AK</div>
+          </div>
+          <div>
+            <h1>Annapurna's Kitchen – Admin</h1>
+            <div class="subtitle">Orders • Payments • Customer Balances</div>
+          </div>
+        </div>
+        <div class="admin-meta">
+          <div class="pill">
+            <span>👩‍🍳</span>
+            <span>
+              Logged in as {{ session.admin_username or "admin" }} ·
+              <a href="/admin/logout">Logout</a>
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-button active" data-tab="orders">📊 Orders &amp; Payments</button>
+        <button class="tab-button" data-tab="menujson">📋 Weekly Menu JSON</button>
+      </div>
+
+      <!-- ===== TAB: ORDERS & PAYMENTS ===== -->
+      <div class="tab-panel active" id="tab-orders">
+        <div class="csv-controls">
+          <label for="csvMonth">
+            Export monthly summary (for accountant):
+          </label>
+          <input id="csvMonth" type="month" />
+          <button id="downloadCsvBtn" class="secondary">Download CSV</button>
+          <span id="csvStatus"></span>
+        </div>
+
+        <h2><span class="icon">👥</span> Customers &amp; Balances</h2>
+        <p class="small">
+          Grouped by phone number. Balance = total ordered (all time) – total paid (all time).
+        </p>
+        <table id="summaryTable">
+          <thead>
+            <tr>
+              <th>Phone</th>
+              <th>Name</th>
+              <th>Total Ordered</th>
+              <th>Total Paid</th>
+              <th>Balance</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="flex">
+          <div class="card-panel" style="flex: 2;">
+            <h2><span class="icon">🧾</span> Orders for Selected Customer</h2>
+            <p class="small" id="selectedCustomerInfo">Select a customer row to see orders.</p>
+            <div id="ordersList"></div>
+          </div>
+
+          <div class="card-panel" style="flex: 1;">
+            <h2><span class="icon">💵</span> Add Payment</h2>
+            <p class="small">Link a payment to a customer's phone number.</p>
+            <div class="field">
+              <label for="payPhone">Phone</label>
+              <input id="payPhone" type="text" placeholder="Customer phone" />
+            </div>
+            <div class="field">
+              <label for="payAmount">Amount</label>
+              <input id="payAmount" type="number" step="0.01" placeholder="e.g. 20.00" />
+            </div>
+            <div class="field">
+              <label for="payNote">Note (optional)</label>
+              <textarea id="payNote" rows="2" placeholder="e.g. Cash received, Zelle, etc."></textarea>
+            </div>
+            <button id="addPaymentBtn" class="primary">Add Payment</button>
+            <p class="small" id="paymentStatus"></p>
+
+            <hr style="margin:10px 0; border:none; border-top:1px dashed #e0d7c7;" />
+
+            <h2><span class="icon">📚</span> Payments for Selected Customer</h2>
+            <div id="paymentsList" class="small"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TAB: WEEKLY MENU JSON ===== -->
+      <div class="tab-panel" id="tab-menujson">
+        <div class="card-panel">
+          <h2><span class="icon">📋</span> Weekly Menu JSON (Config)</h2>
+          <p class="small">
+            Admin-only workspace for weekly menu configuration.
+            Edit the JSON below, week text, cutoff times, and notes.
+            For now this is a scratchpad – you copy from here into your frontend code
+            or a future API.
+          </p>
+
+          <div class="field">
+            <label for="menuJsonEditor">Menu JSON</label>
+            <textarea id="menuJsonEditor" rows="16"
+              style="font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:0.78rem;"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="menuWeekText">Week range text</label>
+            <input id="menuWeekText" type="text" placeholder="e.g. Week Menu: Nov 24 – Nov 28" />
+          </div>
+
+          <div class="field">
+            <label>Daily cutoff times (24-hr)</label>
+            <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 14px;">
+              <div class="field">
+                <label>Monday</label>
+                <input id="menuCutoffMonday" type="text" placeholder="12:00" />
+              </div>
+              <div class="field">
+                <label>Tuesday</label>
+                <input id="menuCutoffTuesday" type="text" placeholder="12:00" />
+              </div>
+              <div class="field">
+                <label>Wednesday</label>
+                <input id="menuCutoffWednesday" type="text" placeholder="12:00" />
+              </div>
+              <div class="field">
+                <label>Thursday</label>
+                <input id="menuCutoffThursday" type="text" placeholder="12:00" />
+              </div>
+              <div class="field">
+                <label>Friday</label>
+                <input id="menuCutoffFriday" type="text" placeholder="12:00" />
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="menuSpecialNote">Special note</label>
+            <textarea id="menuSpecialNote" rows="3" placeholder="e.g. Order by Thursday 8 PM. Closed on Friday this week."></textarea>
+          </div>
+
+          <button class="primary" id="copyMenuJsonBtn">Copy JSON to Clipboard</button>
+          <p class="small" id="menuJsonStatus"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ----- Load customer summary -----
+    async function loadSummary() {
+      const tbody = document.querySelector("#summaryTable tbody");
+      tbody.innerHTML = "<tr><td colspan='6'>Loading...</td></tr>";
+
+      const res = await fetch("/api/admin/summary");
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='6'>No customers yet.</td></tr>";
+        return;
+      }
+
+      tbody.innerHTML = "";
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.dataset.phone = row.phone;
+        tr.innerHTML = `
+          <td>${row.phone}</td>
+          <td>${row.name || ""}</td>
+          <td>$${row.total_ordered.toFixed(2)}</td>
+          <td>$${row.total_paid.toFixed(2)}</td>
+          <td>
+            $${row.balance.toFixed(2)}
+            ${
+              row.balance > 0
+                ? `<span class="badge red">Due</span>`
+                : `<span class="badge green">Paid</span>`
+            }
+          </td>
+          <td><button class="secondary" data-phone="${row.phone}">View</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ----- Orders for a specific phone -----
+    async function loadOrdersForPhone(phone) {
+      const info = document.getElementById("selectedCustomerInfo");
+      const container = document.getElementById("ordersList");
+      const payPhone = document.getElementById("payPhone");
+
+      payPhone.value = phone;
+      info.textContent = "Orders for: " + phone;
+      container.innerHTML = "Loading...";
+
+      const res = await fetch("/api/admin/orders?phone=" + encodeURIComponent(phone));
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        container.innerHTML = "<p class='small'>No orders for this customer yet.</p>";
+        document.getElementById("paymentsList").innerHTML = "<p>No payments recorded yet for this customer.</p>";
+        return;
+      }
+
+      container.innerHTML = "";
+      data.forEach(order => {
+        const div = document.createElement("div");
+        div.style.borderBottom = "1px solid #e0d7c7";
+        div.style.padding = "6px 0";
+        const createdDate = new Date(order.created_at).toLocaleString();
+        div.innerHTML = `
+          <div><strong>Order #${order.id}</strong> • ${createdDate} • Total: $${order.total.toFixed(2)}</div>
+          <pre>${JSON.stringify(order.data, null, 2)}</pre>
+        `;
+        container.appendChild(div);
+      });
+
+      loadPaymentsForPhone(phone);
+    }
+
+    // ----- Payments for a specific phone -----
+    async function loadPaymentsForPhone(phone) {
+      const container = document.getElementById("paymentsList");
+      container.innerHTML = "Loading...";
+
+      const res = await fetch("/api/admin/payments?phone=" + encodeURIComponent(phone));
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        container.innerHTML = "<p>No payments recorded yet for this customer.</p>";
+        return;
+      }
+
+      container.innerHTML = "";
+      data.forEach(p => {
+        const d = new Date(p.created_at).toLocaleString();
+        const line = document.createElement("div");
+        line.textContent = `${d} – $${p.amount.toFixed(2)} (${p.note || "no note"})`;
+        container.appendChild(line);
+      });
+    }
+
+    // Row "View" buttons
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("button.secondary[data-phone]");
+      if (btn) {
+        const phone = btn.dataset.phone;
+        loadOrdersForPhone(phone);
+      }
+    });
+
+    // ----- Add Payment -----
+    document.getElementById("addPaymentBtn").addEventListener("click", async () => {
+      const phone = document.getElementById("payPhone").value.trim();
+      const amount = parseFloat(document.getElementById("payAmount").value);
+      const note = document.getElementById("payNote").value.trim();
+      const status = document.getElementById("paymentStatus");
+
+      if (!phone) {
+        alert("Phone is required.");
+        return;
+      }
+      if (!amount || amount <= 0) {
+        alert("Amount must be > 0.");
+        return;
+      }
+
+      status.textContent = "Saving payment...";
+      try {
+        const res = await fetch("/api/admin/payments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, amount, note })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Unknown error");
+        }
+        status.textContent = "Payment saved.";
+        document.getElementById("payAmount").value = "";
+        document.getElementById("payNote").value = "";
+
+        loadSummary();
+        loadPaymentsForPhone(phone);
+      } catch (err) {
+        console.error(err);
+        status.textContent = "Error saving payment.";
+        alert("Error saving payment: " + err.message);
+      }
+    });
+
+    // ----- CSV Download -----
+    document.getElementById("downloadCsvBtn").addEventListener("click", () => {
+      const monthInput = document.getElementById("csvMonth");
+      const status = document.getElementById("csvStatus");
+      const val = monthInput.value; // "YYYY-MM"
+
+      if (!val) {
+        alert("Please choose a month first.");
+        return;
+      }
+
+      status.textContent = "Preparing CSV...";
+      const url = "/api/admin/summary_csv?month=" + encodeURIComponent(val);
+      window.location.href = url;
+
+      setTimeout(() => {
+        status.textContent = "";
+      }, 3000);
+    });
+
+    // ----- Tabs -----
+    document.querySelectorAll(".tab-button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tab = btn.dataset.tab;
+
+        document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        document.getElementById("tab-" + tab).classList.add("active");
+      });
+    });
+
+    // ----- Weekly Menu JSON defaults & copy -----
+    const defaultMenuJson = `{
+  "Monday": [
+    {
+      "id": "carrot_rasam",
+      "name": "Carrot Rasam",
+      "sizes": [
+        { "label": "16 oz", "price": 5.0 }
+      ]
+    },
+    {
+      "id": "tomato_pappu",
+      "name": "Tomato Pappu (Toor Dal + Tomato)",
+      "sizes": [
+        { "label": "16 oz", "price": 5.0 }
+      ]
+    },
+    {
+      "id": "beans_carrot_fry",
+      "name": "Beans & Carrot Fry",
+      "sizes": [
+        { "label": "8 oz", "price": 4.0 },
+        { "label": "16 oz", "price": 8.0 }
+      ]
+    }
+  ],
+  "Tuesday": [
+    {
+      "id": "chana_saag",
+      "name": "Chana Saag (Chickpeas + Spinach)",
+      "sizes": [
+        { "label": "8 oz", "price": 4.0 },
+        { "label": "16 oz", "price": 9.0 }
+      ]
+    },
+    {
+      "id": "potato_fry",
+      "name": "Potato Fry",
+      "sizes": [
+        { "label": "8 oz", "price": 3.0 },
+        { "label": "16 oz", "price": 6.0 }
+      ]
+    }
+  ],
+  "Wednesday": [
+    {
+      "id": "tofu_burji",
+      "name": "Tofu Burji",
+      "sizes": [
+        { "label": "8 oz", "price": 5.0 },
+        { "label": "16 oz", "price": 10.0 }
+      ]
+    },
+    {
+      "id": "egg_pulusu",
+      "name": "Egg Pulusu",
+      "sizes": [
+        { "label": "8 oz (1 egg)", "price": 4.0 },
+        { "label": "16 oz (2 eggs)", "price": 8.0 }
+      ]
+    }
+  ],
+  "Thursday": [
+    {
+      "id": "mushroom_capsicum",
+      "name": "Mushroom & Capsicum",
+      "sizes": [
+        { "label": "8 oz", "price": 6.0 },
+        { "label": "16 oz", "price": 12.0 }
+      ]
+    },
+    {
+      "id": "baingan_bhartha",
+      "name": "Baingan Bharta (Smoked Eggplant)",
+      "sizes": [
+        { "label": "8 oz", "price": 5.0 },
+        { "label": "16 oz", "price": 8.0 }
+      ]
+    }
+  ],
+  "Friday": [
+    {
+      "id": "chilli_paneer_pulav",
+      "name": "Chilli Paneer Pulav",
+      "sizes": [
+        { "label": "10.99 (single size)", "price": 10.99 }
+      ]
+    },
+    {
+      "id": "kaju_butter_masala",
+      "name": "Kaju Butter Masala",
+      "sizes": [
+        { "label": "8 oz", "price": 4.0 },
+        { "label": "16 oz", "price": 10.0 }
+      ]
+    }
+  ]
+}`;
+
+    function initMenuJsonTab() {
+      const jsonEl = document.getElementById("menuJsonEditor");
+      const weekEl = document.getElementById("menuWeekText");
+      const noteEl = document.getElementById("menuSpecialNote");
+      const cutoffs = {
+        Monday: document.getElementById("menuCutoffMonday"),
+        Tuesday: document.getElementById("menuCutoffTuesday"),
+        Wednesday: document.getElementById("menuCutoffWednesday"),
+        Thursday: document.getElementById("menuCutoffThursday"),
+        Friday: document.getElementById("menuCutoffFriday")
+      };
+
+      if (jsonEl && !jsonEl.value.trim()) {
+        jsonEl.value = defaultMenuJson;
+      }
+      if (weekEl && !weekEl.value.trim()) {
+        weekEl.value = "Week Menu: Nov 17 – Nov 21";
+      }
+      if (noteEl && !noteEl.value.trim()) {
+        noteEl.value = "";
+      }
+      if (cutoffs.Monday && !cutoffs.Monday.value.trim()) {
+        cutoffs.Monday.value = "12:00";
+        cutoffs.Tuesday.value = "12:00";
+        cutoffs.Wednesday.value = "12:00";
+        cutoffs.Thursday.value = "12:00";
+        cutoffs.Friday.value = "12:00";
+      }
+    }
+
+    document.getElementById("copyMenuJsonBtn").addEventListener("click", () => {
+      const jsonEl = document.getElementById("menuJsonEditor");
+      const status = document.getElementById("menuJsonStatus");
+
+      jsonEl.select();
+      jsonEl.setSelectionRange(0, 99999);
+      const ok = document.execCommand("copy");
+
+      status.textContent = ok
+        ? "JSON copied to clipboard."
+        : "Could not copy JSON (please copy manually).";
+      setTimeout(() => (status.textContent = ""), 4000);
+    });
+
+    // Initial load
+    loadSummary();
+    initMenuJsonTab();
+  </script>
+</body>
+</html>
