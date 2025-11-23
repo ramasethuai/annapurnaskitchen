@@ -106,6 +106,12 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/health")
+def health():
+    """Health check endpoint for Render.com"""
+    return jsonify({"status": "ok"}), 200
+
+
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     error = None
