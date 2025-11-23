@@ -434,7 +434,9 @@
       <div class="tabs">
         <button class="tab-button active" data-tab="orders">📊 Orders &amp; Payments</button>
         <button class="tab-button" data-tab="menujson">📋 Weekly Menu JSON</button>
+        <button class="tab-button" data-tab="users">🧑‍🍳 Admin Users</button>
       </div>
+      
 
       <!-- ===== TAB: ORDERS & PAYMENTS ===== -->
       <div class="tab-panel active" id="tab-orders">
@@ -555,6 +557,40 @@
           <p class="small" id="menuJsonStatus"></p>
         </div>
       </div>
+
+      <!-- ===== TAB: ADMIN USERS ===== -->
+    <div class="tab-panel" id="tab-users">
+      <div class="card-panel">
+        <h2><span class="icon">🧑‍🍳</span> Admin Users</h2>
+        <p class="small">
+          Create additional admin accounts. Each admin can log in to manage orders & payments.
+        </p>
+
+        <div class="flex" style="margin-top: 10px;">
+          <!-- Left: list of admins -->
+          <div style="flex: 1;">
+            <h3 style="font-size:0.9rem; margin-bottom:4px;">Existing Admins</h3>
+            <div id="adminUsersList" class="small"></div>
+          </div>
+
+          <!-- Right: create new admin -->
+          <div class="card-panel" style="flex: 1; margin-top:0;">
+            <h3 style="font-size:0.9rem; margin-bottom:4px;">Create New Admin</h3>
+            <div class="field">
+              <label for="newAdminUsername">Username</label>
+              <input id="newAdminUsername" type="text" placeholder="e.g. hari_admin" />
+            </div>
+            <div class="field">
+              <label for="newAdminPassword">Password</label>
+              <input id="newAdminPassword" type="password" placeholder="At least 6 characters" />
+            </div>
+            <button id="createAdminBtn" class="primary" style="margin-top:4px;">Create Admin</button>
+            <p class="small" id="adminUsersStatus"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     </div>
   </div>
 
@@ -731,8 +767,13 @@
 
         document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
         document.getElementById("tab-" + tab).classList.add("active");
+
+        if (tab === "users") {
+          loadAdminUsers();
+        }
       });
     });
+
 
     // ----- Weekly Menu JSON defaults & copy -----
     const defaultMenuJson = `{
@@ -863,6 +904,87 @@
       }
     }
 
+    // ----- Admin Users: list & create -----
+async function loadAdminUsers() {
+  const container = document.getElementById("adminUsersList");
+  if (!container) return;
+  container.innerHTML = "Loading...";
+
+  try {
+    const res = await fetch("/api/admin/admins");
+    if (!res.ok) {
+      container.innerHTML = "Unable to load admins.";
+      return;
+    }
+    const admins = await res.json();
+    if (!Array.isArray(admins) || admins.length === 0) {
+      container.innerHTML = "<p>No admin users yet.</p>";
+      return;
+    }
+
+    const list = document.createElement("ul");
+    list.style.listStyle = "none";
+    list.style.paddingLeft = "0";
+
+    admins.forEach(a => {
+      const li = document.createElement("li");
+      li.textContent = a.username;
+      li.style.padding = "2px 0";
+      list.appendChild(li);
+    });
+
+    container.innerHTML = "";
+    container.appendChild(list);
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = "Error loading admins.";
+  }
+}
+
+const createAdminBtn = document.getElementById("createAdminBtn");
+if (createAdminBtn) {
+  createAdminBtn.addEventListener("click", async () => {
+    const usernameEl = document.getElementById("newAdminUsername");
+    const passwordEl = document.getElementById("newAdminPassword");
+    const statusEl = document.getElementById("adminUsersStatus");
+
+    const username = usernameEl.value.trim();
+    const password = passwordEl.value;
+
+    if (!username || !password) {
+      alert("Username and password are required.");
+      return;
+    }
+    if (password.length < 6) {
+      alert("Password should be at least 6 characters.");
+      return;
+    }
+
+    statusEl.textContent = "Creating admin...";
+    try {
+      const res = await fetch("/api/admin/admins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        statusEl.textContent = data.error || "Error creating admin.";
+        return;
+      }
+
+      statusEl.textContent = "Admin created successfully.";
+      usernameEl.value = "";
+      passwordEl.value = "";
+      loadAdminUsers();
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = "Error creating admin.";
+    }
+  });
+}
+
+
     document.getElementById("copyMenuJsonBtn").addEventListener("click", () => {
       const jsonEl = document.getElementById("menuJsonEditor");
       const status = document.getElementById("menuJsonStatus");
@@ -880,6 +1002,7 @@
     // Initial load
     loadSummary();
     initMenuJsonTab();
+    loadAdminUsers(); // optional – you can leave it lazy/commented out and only load when tab is opened
   </script>
 </body>
 </html>

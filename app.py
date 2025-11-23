@@ -146,45 +146,55 @@ def admin_login():
     return render_template("admin_login.html", error=error)
 
 
-@app.route("/admin/create-account", methods=["GET", "POST"])
-def create_account():
-    """Create new admin account. Allows if no admins exist, or if logged in admin."""
-    # Check if any admins exist
+@app.route("/api/admin/admins", methods=["GET"])
+@login_required
+def list_admins():
+    """
+    Return a simple list of admin users (id + username).
+    No passwords are returned for security reasons.
+    """
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT COUNT(*) FROM admins")
-    admin_count = c.fetchone()[0]
+    c.execute("SELECT id, username FROM admins ORDER BY username")
+    rows = c.fetchall()
     conn.close()
-    
-    # If admins exist, require login
-    if admin_count > 0 and not session.get("admin_logged_in"):
-        return redirect(url_for("admin_login", next=url_for("create_account")))
-    
-    error = None
-    success = None
-    
-    if request.method == "POST":
-        username = request.form.get("username", "").strip()
-        password = request.form.get("password", "")
-        confirm_password = request.form.get("confirm_password", "")
-        
-        if not username:
-            error = "Username is required."
-        elif not password:
-            error = "Password is required."
-        elif len(password) < 6:
-            error = "Password must be at least 6 characters."
-        elif password != confirm_password:
-            error = "Passwords do not match."
-        else:
-            # Try to create the account
-            try:
-                create_admin_user(username, password)
-                success = f"Account '{username}' created successfully! You can now login."
-            except Exception as e:
-                error = f"Failed to create account: {str(e)}"
-    
-    return render_template("admin_create_account.html", error=error, success=success, is_first_account=(admin_count == 0))
+
+    admins = [{"id": row["id"], "username": row["username"]} for row in rows]
+    return jsonify(admins)
+
+
+@app.route("/api/admin/admins", methods=["POST"])
+@login_required
+def create_admin():
+    """
+    Create a new admin user from JSON: { "username": "...", "password": "..." }
+    """
+    data = request.get_json() or {}
+    username = (data.get("username") or "").strip()
+    password = data.get("password") or ""
+
+    if not username or not password:
+        return jsonify({"error": "Username and password are required."}), 400
+
+    if len(password) < 6:
+        return jsonify({"error": "Password should be at least 6 characters."}), 400
+
+    conn = get_db()
+    c = conn.cursor()
+    password_hash = generate_password_hash(password)
+
+    try:
+        c.execute(
+            "INSERT INTO admins (username, password_hash) VALUES (?, ?)",
+            (username, password_hash),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({"error": "Username already exists."}), 400
+
+    conn.close()
+    return jsonify({"status": "ok"})
 
 
 
