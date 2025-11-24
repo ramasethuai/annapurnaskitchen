@@ -404,6 +404,86 @@
       .shell { margin-top: 140px; }
     }
 
+    /* ----- Weekly menu editor UI ----- */
+    .day-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .day-button {
+      border-radius: var(--radius-pill);
+      border: 1px solid #d9cebf;
+      background: #f7f1e7;
+      color: #6e5f54;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .day-button.active {
+      background: linear-gradient(135deg, #ffb347, #ff7c2a);
+      color: #3a2613;
+      border-color: #f28c28;
+      font-weight: 600;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .menu-items-list {
+      border-radius: 10px;
+      background: #f9f4ec;
+      border: 1px solid #eadfce;
+      padding: 6px 8px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .menu-item-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px dashed #e0d7c7;
+      font-size: 0.8rem;
+    }
+    .menu-item-row:last-child {
+      border-bottom: none;
+    }
+    .menu-item-main {
+      flex: 1;
+      min-width: 0;
+    }
+    .menu-item-main strong {
+      font-weight: 600;
+    }
+    .small-muted {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+    .menu-item-meta {
+      text-align: right;
+      min-width: 80px;
+    }
+    .menu-item-actions button {
+      margin-top: 2px;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+    }
+    .menu-item-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+      gap: 6px;
+      align-items: center;
+    }
+    .menu-item-form input {
+      font-size: 0.8rem;
+      padding: 5px 7px;
+    }
+    @media (max-width: 700px) {
+      .menu-item-form {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -500,23 +580,52 @@
         </div>
       </div>
 
-      <!-- ===== TAB: WEEKLY MENU JSON ===== -->
+      <!-- ===== TAB: WEEKLY MENU (CONFIG) ===== -->
       <div class="tab-panel" id="tab-menujson">
         <div class="card-panel">
-          <h2><span class="icon">📋</span> Weekly Menu JSON (Config)</h2>
+          <h2><span class="icon">📋</span> Weekly Menu</h2>
           <p class="small">
-            Admin-only workspace for weekly menu configuration.
-            Edit the JSON below, week text, cutoff times, and notes.
-            For now this is a scratchpad – you copy from here into your frontend code
-            or a future API.
+            Use this section to manage the weekly menu by day. Customers will see these items on the main page.
           </p>
 
+          <!-- Day selector -->
           <div class="field">
-            <label for="menuJsonEditor">Menu JSON</label>
-            <textarea id="menuJsonEditor" rows="16"
-              style="font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:0.78rem;"></textarea>
+            <label>Day of week</label>
+            <div class="day-buttons" id="menuDayButtons">
+              <button type="button" class="day-button active" data-day="Monday">Monday</button>
+              <button type="button" class="day-button" data-day="Tuesday">Tuesday</button>
+              <button type="button" class="day-button" data-day="Wednesday">Wednesday</button>
+              <button type="button" class="day-button" data-day="Thursday">Thursday</button>
+              <button type="button" class="day-button" data-day="Friday">Friday</button>
+              <button type="button" class="day-button" data-day="Saturday">Saturday</button>
+              <button type="button" class="day-button" data-day="Sunday">Sunday</button>
+            </div>
           </div>
 
+          <!-- Items list for selected day -->
+          <div class="field">
+            <label>Items for <span id="menuCurrentDayLabel">Monday</span></label>
+            <div id="menuItemsList" class="menu-items-list">
+              <p class="small">No items yet for this day.</p>
+            </div>
+          </div>
+
+          <!-- Add item form -->
+          <div class="field">
+            <label>Add new item</label>
+            <div class="menu-item-form">
+              <input id="menuItemName" type="text" placeholder="Name, e.g. Chana Saag" />
+              <input id="menuItemDescription" type="text" placeholder="Description (optional)" />
+              <input id="menuItemWeight" type="text" placeholder="Weight / size, e.g. 16 oz" />
+              <input id="menuItemPrice" type="number" step="0.01" placeholder="Price, e.g. 8.00" />
+              <button type="button" id="menuAddItemBtn" class="primary">Add item</button>
+            </div>
+            <p class="small" id="menuItemFormStatus"></p>
+          </div>
+
+          <hr style="margin:10px 0; border:none; border-top:1px dashed #e0d7c7;" />
+
+          <!-- Week text / cutoffs / note -->
           <div class="field">
             <label for="menuWeekText">Week range text</label>
             <input id="menuWeekText" type="text" placeholder="e.g. Week Menu: Nov 24 – Nov 28" />
@@ -553,13 +662,23 @@
             <textarea id="menuSpecialNote" rows="3" placeholder="e.g. Order by Thursday 8 PM. Closed on Friday this week."></textarea>
           </div>
 
-          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:4px;">
-            <button class="secondary" id="copyMenuJsonBtn">Copy JSON</button>
-            <button class="primary" id="saveMenuConfigBtn">Save &amp; apply to website</button>
+          <!-- Advanced JSON view (kept for compatibility, auto-synced with UI) -->
+          <details class="field" style="margin-top: 8px;">
+            <summary style="cursor:pointer; font-size:0.82rem; color: var(--muted);">
+              Advanced: JSON view (optional)
+            </summary>
+            <label for="menuJsonEditor" style="font-size:0.8rem; margin-top:6px;">Menu JSON (auto-generated)</label>
+            <textarea id="menuJsonEditor" rows="10"
+              style="font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:0.78rem;"></textarea>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:4px;">
+              <button class="secondary" id="copyMenuJsonBtn" type="button">Copy JSON</button>
+            </div>
+          </details>
+
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px;">
+            <button class="primary" id="saveMenuConfigBtn" type="button">Save &amp; apply to website</button>
             <p class="small" id="menuJsonStatus"></p>
           </div>
-          
-          <p class="small" id="menuJsonStatus"></p>
         </div>
       </div>
 
@@ -781,7 +900,7 @@
 
 
     // ----- Weekly Menu JSON defaults & copy -----
-    const defaultMenuJson = `{
+const defaultMenuJson = `{
   "Monday": [
     {
       "id": "carrot_rasam",
@@ -879,6 +998,198 @@
   ]
 }`;
 
+// ----- Weekly menu admin UI -----
+let adminMenuData = {};
+const ADMIN_MENU_DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday"
+];
+let currentAdminMenuDay = "Monday";
+
+function syncAdminMenuJsonTextarea() {
+  const jsonEl = document.getElementById("menuJsonEditor");
+  if (!jsonEl) return;
+  try {
+    jsonEl.value = JSON.stringify(adminMenuData, null, 2);
+  } catch (e) {
+    console.error("Failed to stringify admin menu data:", e);
+  }
+}
+
+function initAdminMenuFromJsonText(text) {
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed === "object") {
+      adminMenuData = parsed;
+    } else {
+      adminMenuData = {};
+    }
+  } catch (e) {
+    console.error("Invalid menu JSON in admin, starting from defaults:", e);
+    try {
+      adminMenuData = JSON.parse(defaultMenuJson);
+    } catch {
+      adminMenuData = {};
+    }
+  }
+
+  // Ensure all days exist
+  ADMIN_MENU_DAYS.forEach((day) => {
+    if (!Array.isArray(adminMenuData[day])) {
+      adminMenuData[day] = [];
+    }
+  });
+
+  syncAdminMenuJsonTextarea();
+}
+
+function renderAdminMenuDay(day) {
+  currentAdminMenuDay = day;
+  const labelEl = document.getElementById("menuCurrentDayLabel");
+  const listEl = document.getElementById("menuItemsList");
+  if (labelEl) labelEl.textContent = day;
+  if (!listEl) return;
+
+  // Highlight active day button
+  document.querySelectorAll(".day-button").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.day === day);
+  });
+
+  listEl.innerHTML = "";
+  const items = adminMenuData[day] || [];
+  if (!items.length) {
+    listEl.innerHTML = "<p class='small'>No items yet for this day.</p>";
+    return;
+  }
+
+  items.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "menu-item-row";
+
+    const firstSize =
+      item.sizes && item.sizes[0]
+        ? item.sizes[0]
+        : { label: "", price: 0 };
+    const priceNum = Number(firstSize.price || 0);
+
+    row.innerHTML = `
+      <div class="menu-item-main">
+        <div>
+          <strong>${item.name || ""}</strong>
+          ${
+            firstSize.label
+              ? `<span class="small-muted">${firstSize.label}</span>`
+              : ""
+          }
+        </div>
+        ${
+          item.description
+            ? `<div class="small">${item.description}</div>`
+            : ""
+        }
+      </div>
+      <div class="menu-item-meta">
+        <div class="small">$${priceNum.toFixed(2)}</div>
+        <div class="menu-item-actions">
+          <button type="button" class="secondary" data-index="${index}">Remove</button>
+        </div>
+      </div>
+    `;
+
+    const removeBtn = row.querySelector("button[data-index]");
+    if (removeBtn) {
+      removeBtn.addEventListener("click", () => {
+        adminMenuData[day].splice(index, 1);
+        syncAdminMenuJsonTextarea();
+        renderAdminMenuDay(day);
+      });
+    }
+
+    listEl.appendChild(row);
+  });
+}
+
+function setupAdminMenuUi() {
+  const dayButtons = document.querySelectorAll(".day-button");
+  dayButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const day = btn.dataset.day;
+      if (!day) return;
+      renderAdminMenuDay(day);
+    });
+  });
+
+  const addBtn = document.getElementById("menuAddItemBtn");
+  if (addBtn) {
+    addBtn.addEventListener("click", () => {
+      const nameEl = document.getElementById("menuItemName");
+      const descEl = document.getElementById("menuItemDescription");
+      const weightEl = document.getElementById("menuItemWeight");
+      const priceEl = document.getElementById("menuItemPrice");
+      const statusEl = document.getElementById("menuItemFormStatus");
+
+      const name = (nameEl.value || "").trim();
+      const description = (descEl.value || "").trim();
+      const weight = (weightEl.value || "").trim();
+      const price = parseFloat(priceEl.value || "");
+
+      if (!name) {
+        statusEl.textContent = "Name is required.";
+        return;
+      }
+      if (!weight) {
+        statusEl.textContent = "Weight / size is required.";
+        return;
+      }
+      if (!price || price <= 0) {
+        statusEl.textContent = "Price must be > 0.";
+        return;
+      }
+
+      const id =
+        name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "") || `item-${Date.now()}`;
+
+      const newItem = {
+        id,
+        name,
+        description,
+        sizes: [
+          {
+            label: weight,
+            price
+          }
+        ]
+      };
+
+      if (!Array.isArray(adminMenuData[currentAdminMenuDay])) {
+        adminMenuData[currentAdminMenuDay] = [];
+      }
+      adminMenuData[currentAdminMenuDay].push(newItem);
+
+      // Clear form & status
+      nameEl.value = "";
+      descEl.value = "";
+      weightEl.value = "";
+      priceEl.value = "";
+      statusEl.textContent = "Item added.";
+      setTimeout(() => {
+        statusEl.textContent = "";
+      }, 2000);
+
+      syncAdminMenuJsonTextarea();
+      renderAdminMenuDay(currentAdminMenuDay);
+    });
+  }
+}
+
 async function initMenuJsonTab() {
   const jsonEl = document.getElementById("menuJsonEditor");
   const weekEl = document.getElementById("menuWeekText");
@@ -945,6 +1256,11 @@ async function initMenuJsonTab() {
     cutoffs.Thursday.value = "12:00";
     cutoffs.Friday.value = "12:00";
   }
+
+  // Initialize admin menu data from whatever JSON we have now
+  initAdminMenuFromJsonText(jsonEl.value || defaultMenuJson);
+  setupAdminMenuUi();
+  renderAdminMenuDay(currentAdminMenuDay);
 }
 
 
@@ -1029,64 +1345,68 @@ if (createAdminBtn) {
 }
 
 
-    document.getElementById("copyMenuJsonBtn").addEventListener("click", () => {
-      const jsonEl = document.getElementById("menuJsonEditor");
-      const status = document.getElementById("menuJsonStatus");
+    const copyBtn = document.getElementById("copyMenuJsonBtn");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", () => {
+        const jsonEl = document.getElementById("menuJsonEditor");
+        const status = document.getElementById("menuJsonStatus");
 
-      jsonEl.select();
-      jsonEl.setSelectionRange(0, 99999);
-      const ok = document.execCommand("copy");
+        jsonEl.select();
+        jsonEl.setSelectionRange(0, 99999);
+        const ok = document.execCommand("copy");
 
-      status.textContent = ok
-        ? "JSON copied to clipboard."
-        : "Could not copy JSON (please copy manually).";
-      setTimeout(() => (status.textContent = ""), 4000);
-    });
-
-    const saveMenuBtn = document.getElementById("saveMenuConfigBtn");
-if (saveMenuBtn) {
-  saveMenuBtn.addEventListener("click", async () => {
-    const jsonEl = document.getElementById("menuJsonEditor");
-    const weekEl = document.getElementById("menuWeekText");
-    const noteEl = document.getElementById("menuSpecialNote");
-    const status = document.getElementById("menuJsonStatus");
-
-    const cutoffs = {
-      Monday: document.getElementById("menuCutoffMonday").value.trim(),
-      Tuesday: document.getElementById("menuCutoffTuesday").value.trim(),
-      Wednesday: document.getElementById("menuCutoffWednesday").value.trim(),
-      Thursday: document.getElementById("menuCutoffThursday").value.trim(),
-      Friday: document.getElementById("menuCutoffFriday").value.trim()
-    };
-
-    const payload = {
-      menu_json: jsonEl.value,
-      week_text: weekEl.value.trim(),
-      special_note: noteEl.value.trim(),
-      cutoffs
-    };
-
-    status.textContent = "Saving...";
-    try {
-      const res = await fetch("/api/admin/menu_config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        status.textContent = ok
+          ? "JSON copied to clipboard."
+          : "Could not copy JSON (please copy manually).";
+        setTimeout(() => (status.textContent = ""), 4000);
       });
-      const data = await res.json();
-      if (!res.ok) {
-        status.textContent = data.error || "Error saving menu config.";
-        return;
-      }
-      status.textContent = "Saved. Website will now use this menu.";
-      setTimeout(() => (status.textContent = ""), 4000);
-    } catch (err) {
-      console.error(err);
-      status.textContent = "Error saving menu config.";
     }
-  });
-}
 
+    // Save menu config (uses JSON kept in sync with the UI)
+    const saveMenuBtn = document.getElementById("saveMenuConfigBtn");
+    if (saveMenuBtn) {
+      saveMenuBtn.addEventListener("click", async () => {
+        const jsonEl = document.getElementById("menuJsonEditor");
+        const weekEl = document.getElementById("menuWeekText");
+        const noteEl = document.getElementById("menuSpecialNote");
+        const status = document.getElementById("menuJsonStatus");
+
+        const cutoffs = {
+          Monday: document.getElementById("menuCutoffMonday").value.trim(),
+          Tuesday: document.getElementById("menuCutoffTuesday").value.trim(),
+          Wednesday: document.getElementById("menuCutoffWednesday").value.trim(),
+          Thursday: document.getElementById("menuCutoffThursday").value.trim(),
+          Friday: document.getElementById("menuCutoffFriday").value.trim()
+        };
+
+        const payload = {
+          menu_json: jsonEl.value,
+          week_text: weekEl.value.trim(),
+          special_note: noteEl.value.trim(),
+          cutoffs
+        };
+
+        status.textContent = "Saving...";
+        try {
+          const res = await fetch("/api/admin/menu_config", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Error saving config");
+          }
+          status.textContent = "Saved. Homepage menu will use this config.";
+          setTimeout(() => {
+            status.textContent = "";
+          }, 4000);
+        } catch (err) {
+          console.error(err);
+          status.textContent = "Error saving config.";
+        }
+      });
+    }
 
     // Initial load
     loadSummary();
