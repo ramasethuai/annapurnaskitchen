@@ -46,6 +46,11 @@ body {
   display: none;
 }
 
+/* Hide mobile row by default */
+.mobile-header-buttons {
+  display: none;
+}
+
     /* Mobile: lighter overlay, non-fixed for smooth scrolling */
     /* Mobile & small tablets */
 @media (max-width: 768px) {
@@ -60,31 +65,64 @@ body {
     background-attachment: scroll;
   }
 
-  /* Show the hero image block */
   .mobile-hero {
     display: block;
-    margin: 0 -16px 0;      /* edge-to-edge feel */
+    margin: 0 -16px -8px;  /* full-bleed image with a tiny overlap */
   }
 
   .mobile-hero-img {
-    display: block;
     width: 100%;
     height: auto;
-    border-bottom-left-radius: 24px;
-    border-bottom-right-radius: 24px;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    transform: scale(1.25);
+    transform-origin: top center;
   }
 
-  /* Overlap header pill on bottom of image */
   .header-panel {
-  	margin-top: -32px;          /* overlap */
-  	max-width: 340px;
-  	padding: 10px 16px 12px;
-  	position: relative;
-  	z-index: 2;
-  	margin-left: auto;
-  	margin-right: auto;
+    margin-top: -10px !important;
   }
+
+  /* Optional: reduce Admin pill margins slightly */
+  .admin-button-wrapper {           
+    margin-bottom: -10px;           /* pull it closer to the panel */
+  }
+
+  .header-pill {
+    display: none;
+  }
+
+  /* Hide desktop week menu pill on mobile */
+  #weekRange {
+    display: none !important;
+  }
+
+  /* Show mobile combined row */
+  .mobile-header-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .mobile-week-range {
+    background: rgba(255, 255, 255, 0.75);
+    padding: 8px 14px;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+
+  .mobile-admin-btn {
+    background: #fff;
+    padding: 8px 14px;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    color: #d67a2c;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
 }
 @media (max-width: 480px) {
   .header-panel {
@@ -993,6 +1031,16 @@ body {
       
           <div id="specialNote"></div>
         </div>
+        <!-- Mobile-only combined button row -->
+        <div class="mobile-header-buttons">
+          <div id="mobileWeekMenuBtn" class="mobile-week-range">
+              <span class="emoji">📅</span>
+              <span id="mobileWeekMenuText">Loading…</span>
+          </div>
+
+          <a href="/admin" class="mobile-admin-btn">Admin</a>
+        </div>
+
       </header>
       
 
@@ -1208,6 +1256,7 @@ body {
     let DAY_CUTOFFS = { ...DEFAULT_DAY_CUTOFFS };
 
     const weekRangeEl = document.getElementById("weekRange");
+    const mobileWeekMenuText = document.getElementById("mobileWeekMenuText");
     const specialNoteEl = document.getElementById("specialNote");
 
     // ====== RENDER MENU ======
@@ -1241,6 +1290,9 @@ body {
       const span = weekRangeEl.querySelector("span:nth-child(2)");
       if (span) {
         span.textContent = cfg.week_text;
+      }
+      if (mobileWeekMenuText) {
+        mobileWeekMenuText.textContent = cfg.week_text;
       }
     }
 
