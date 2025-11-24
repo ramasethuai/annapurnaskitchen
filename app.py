@@ -90,6 +90,24 @@ def init_db():
         )
     """)
 
+    # Menu config table: single row with id=1
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS menu_config (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            menu_json TEXT NOT NULL,
+            week_text TEXT,
+            special_note TEXT,
+            cutoff_monday TEXT,
+            cutoff_tuesday TEXT,
+            cutoff_wednesday TEXT,
+            cutoff_thursday TEXT,
+            cutoff_friday TEXT
+        )
+        """
+    )
+
+
     conn.commit()
 
     # 🔹 Ensure at least one admin user exists
@@ -108,6 +126,81 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+# --- Menu config storage helpers ---
+
+
+def get_or_create_menu_config():
+    """Fetch menu config row (id=1). If none, return an 'empty' structure."""
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT * FROM menu_config WHERE id = 1")
+    row = c.fetchone()
+    conn.close()
+
+    if row:
+        return {
+            "menu_json": row["menu_json"],
+            "week_text": row["week_text"] or "",
+            "special_note": row["special_note"] or "",
+            "cutoffs": {
+                "Monday": row["cutoff_monday"] or "",
+                "Tuesday": row["cutoff_tuesday"] or "",
+                "Wednesday": row["cutoff_wednesday"] or "",
+                "Thursday": row["cutoff_thursday"] or "",
+                "Friday": row["cutoff_friday"] or "",
+            },
+        }
+
+    # No row yet – frontend will fall back to its own defaults
+    return {
+        "menu_json": "",
+        "week_text": "",
+        "special_note": "",
+        "cutoffs": {
+            "Monday": "",
+            "Tuesday": "",
+            "Wednesday": "",
+            "Thursday": "",
+            "Friday": "",
+        },
+    }
+
+
+def save_menu_config(payload: dict):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute(
+        """
+        INSERT INTO menu_config (
+            id, menu_json, week_text, special_note,
+            cutoff_monday, cutoff_tuesday, cutoff_wednesday,
+            cutoff_thursday, cutoff_friday
+        )
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            menu_json = excluded.menu_json,
+            week_text = excluded.week_text,
+            special_note = excluded.special_note,
+            cutoff_monday = excluded.cutoff_monday,
+            cutoff_tuesday = excluded.cutoff_tuesday,
+            cutoff_wednesday = excluded.cutoff_wednesday,
+            cutoff_thursday = excluded.cutoff_thursday,
+            cutoff_friday = excluded.cutoff_friday
+        """,
+        (
+            payload.get("menu_json", ""),
+            payload.get("week_text", ""),
+            payload.get("special_note", ""),
+            payload.get("cutoffs", {}).get("Monday", ""),
+            payload.get("cutoffs", {}).get("Tuesday", ""),
+            payload.get("cutoffs", {}).get("Wednesday", ""),
+            payload.get("cutoffs", {}).get("Thursday", ""),
+            payload.get("cutoffs", {}).get("Friday", ""),
+        ),
+    )
+    conn.commit()
+    conn.close()
 
 
 @app.route("/")
@@ -195,6 +288,34 @@ def create_admin():
 
     conn.close()
     return jsonify({"status": "ok"})
+
+
+@app.route("/api/admin/menu_config", methods=["GET", "POST"])
+@login_required
+def admin_menu_config():
+    """Admin view/edit of menu config."""
+    if request.method == "GET":
+        cfg = get_or_create_menu_config()
+        return jsonify(cfg)
+
+    # POST: save
+    data = request.get_json() or {}
+
+    # Basic validation: ensure menu_json parses as JSON
+    try:
+        json.loads(data.get("menu_json", ""))
+    except json.JSONDecodeError:
+        return jsonify({"error": "Menu JSON is not valid JSON."}), 400
+
+    save_menu_config(data)
+    return jsonify({"status": "ok"})
+
+
+@app.route("/api/menu_config", methods=["GET"])
+def public_menu_config():
+    """Public endpoint for the website to fetch current menu config."""
+    cfg = get_or_create_menu_config()
+    return jsonify(cfg)
 
 
 

@@ -553,7 +553,12 @@
             <textarea id="menuSpecialNote" rows="3" placeholder="e.g. Order by Thursday 8 PM. Closed on Friday this week."></textarea>
           </div>
 
-          <button class="primary" id="copyMenuJsonBtn">Copy JSON to Clipboard</button>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:4px;">
+            <button class="secondary" id="copyMenuJsonBtn">Copy JSON</button>
+            <button class="primary" id="saveMenuConfigBtn">Save &amp; apply to website</button>
+            <p class="small" id="menuJsonStatus"></p>
+          </div>
+          
           <p class="small" id="menuJsonStatus"></p>
         </div>
       </div>
@@ -874,35 +879,74 @@
   ]
 }`;
 
-    function initMenuJsonTab() {
-      const jsonEl = document.getElementById("menuJsonEditor");
-      const weekEl = document.getElementById("menuWeekText");
-      const noteEl = document.getElementById("menuSpecialNote");
-      const cutoffs = {
-        Monday: document.getElementById("menuCutoffMonday"),
-        Tuesday: document.getElementById("menuCutoffTuesday"),
-        Wednesday: document.getElementById("menuCutoffWednesday"),
-        Thursday: document.getElementById("menuCutoffThursday"),
-        Friday: document.getElementById("menuCutoffFriday")
-      };
+async function initMenuJsonTab() {
+  const jsonEl = document.getElementById("menuJsonEditor");
+  const weekEl = document.getElementById("menuWeekText");
+  const noteEl = document.getElementById("menuSpecialNote");
+  const cutoffs = {
+    Monday: document.getElementById("menuCutoffMonday"),
+    Tuesday: document.getElementById("menuCutoffTuesday"),
+    Wednesday: document.getElementById("menuCutoffWednesday"),
+    Thursday: document.getElementById("menuCutoffThursday"),
+    Friday: document.getElementById("menuCutoffFriday")
+  };
 
-      if (jsonEl && !jsonEl.value.trim()) {
-        jsonEl.value = defaultMenuJson;
+  // 1) Try to load existing config from backend
+  try {
+    const res = await fetch("/api/admin/menu_config");
+    if (res.ok) {
+      const cfg = await res.json();
+
+      if (cfg.menu_json && !jsonEl.value.trim()) {
+        jsonEl.value = cfg.menu_json;
       }
-      if (weekEl && !weekEl.value.trim()) {
-        weekEl.value = "Week Menu: Nov 17 – Nov 21";
+      if (cfg.week_text && !weekEl.value.trim()) {
+        weekEl.value = cfg.week_text;
       }
-      if (noteEl && !noteEl.value.trim()) {
-        noteEl.value = "";
+      if (cfg.special_note && !noteEl.value.trim()) {
+        noteEl.value = cfg.special_note;
       }
-      if (cutoffs.Monday && !cutoffs.Monday.value.trim()) {
-        cutoffs.Monday.value = "12:00";
-        cutoffs.Tuesday.value = "12:00";
-        cutoffs.Wednesday.value = "12:00";
-        cutoffs.Thursday.value = "12:00";
-        cutoffs.Friday.value = "12:00";
+      if (cfg.cutoffs) {
+        if (cutoffs.Monday && !cutoffs.Monday.value.trim()) {
+          cutoffs.Monday.value = cfg.cutoffs.Monday || "";
+        }
+        if (cutoffs.Tuesday && !cutoffs.Tuesday.value.trim()) {
+          cutoffs.Tuesday.value = cfg.cutoffs.Tuesday || "";
+        }
+        if (cutoffs.Wednesday && !cutoffs.Wednesday.value.trim()) {
+          cutoffs.Wednesday.value = cfg.cutoffs.Wednesday || "";
+        }
+        if (cutoffs.Thursday && !cutoffs.Thursday.value.trim()) {
+          cutoffs.Thursday.value = cfg.cutoffs.Thursday || "";
+        }
+        if (cutoffs.Friday && !cutoffs.Friday.value.trim()) {
+          cutoffs.Friday.value = cfg.cutoffs.Friday || "";
+        }
       }
     }
+  } catch (err) {
+    console.error("Failed to load menu_config from backend:", err);
+  }
+
+  // 2) Fallback defaults if still empty
+  if (jsonEl && !jsonEl.value.trim()) {
+    jsonEl.value = defaultMenuJson;   // your existing default JSON string
+  }
+  if (weekEl && !weekEl.value.trim()) {
+    weekEl.value = "Week Menu: Nov 17 – Nov 21";
+  }
+  if (noteEl && !noteEl.value.trim()) {
+    noteEl.value = "";
+  }
+  if (cutoffs.Monday && !cutoffs.Monday.value.trim()) {
+    cutoffs.Monday.value = "12:00";
+    cutoffs.Tuesday.value = "12:00";
+    cutoffs.Wednesday.value = "12:00";
+    cutoffs.Thursday.value = "12:00";
+    cutoffs.Friday.value = "12:00";
+  }
+}
+
 
     // ----- Admin Users: list & create -----
 async function loadAdminUsers() {
@@ -998,6 +1042,51 @@ if (createAdminBtn) {
         : "Could not copy JSON (please copy manually).";
       setTimeout(() => (status.textContent = ""), 4000);
     });
+
+    const saveMenuBtn = document.getElementById("saveMenuConfigBtn");
+if (saveMenuBtn) {
+  saveMenuBtn.addEventListener("click", async () => {
+    const jsonEl = document.getElementById("menuJsonEditor");
+    const weekEl = document.getElementById("menuWeekText");
+    const noteEl = document.getElementById("menuSpecialNote");
+    const status = document.getElementById("menuJsonStatus");
+
+    const cutoffs = {
+      Monday: document.getElementById("menuCutoffMonday").value.trim(),
+      Tuesday: document.getElementById("menuCutoffTuesday").value.trim(),
+      Wednesday: document.getElementById("menuCutoffWednesday").value.trim(),
+      Thursday: document.getElementById("menuCutoffThursday").value.trim(),
+      Friday: document.getElementById("menuCutoffFriday").value.trim()
+    };
+
+    const payload = {
+      menu_json: jsonEl.value,
+      week_text: weekEl.value.trim(),
+      special_note: noteEl.value.trim(),
+      cutoffs
+    };
+
+    status.textContent = "Saving...";
+    try {
+      const res = await fetch("/api/admin/menu_config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        status.textContent = data.error || "Error saving menu config.";
+        return;
+      }
+      status.textContent = "Saved. Website will now use this menu.";
+      setTimeout(() => (status.textContent = ""), 4000);
+    } catch (err) {
+      console.error(err);
+      status.textContent = "Error saving menu config.";
+    }
+  });
+}
+
 
     // Initial load
     loadSummary();
