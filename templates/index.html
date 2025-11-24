@@ -41,20 +41,55 @@ body {
     sans-serif;
 }
 
+/* Default: desktop & large screens */
+.mobile-hero {
+  display: none;
+}
+
     /* Mobile: lighter overlay, non-fixed for smooth scrolling */
     /* Mobile & small tablets */
 @media (max-width: 768px) {
-  body {
-    background:
-      linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),
-      url("{{ url_for('static', filename='kitchen-hero.png') }}") center 10% / cover no-repeat;
-    background-attachment: scroll;  /* important for mobile */
+  .page {
+    padding-top: 0;
   }
 
+  body {
+    /* No background photo on mobile – just a warm gradient */
+    background:
+      radial-gradient(circle at top left, #fbe6c9 0, #f9f4ea 40%, #f3e5d8 100%);
+    background-attachment: scroll;
+  }
+
+  /* Show the hero image block */
+  .mobile-hero {
+    display: block;
+    margin: 0 -16px 0;      /* edge-to-edge feel */
+  }
+
+  .mobile-hero-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Overlap header pill on bottom of image */
   .header-panel {
-    margin-top: 200px;    /* bring the pill closer to the top */
-    max-width: 360px;
-    padding: 10px 16px 12px;
+  	margin-top: -32px;          /* overlap */
+  	max-width: 340px;
+  	padding: 10px 16px 12px;
+  	position: relative;
+  	z-index: 2;
+  	margin-left: auto;
+  	margin-right: auto;
+  }
+}
+@media (max-width: 480px) {
+  .header-panel {
+    margin-top: -24px;
+    max-width: 320px;
   }
 }
 
@@ -171,34 +206,6 @@ body {
     max-width: 420px;
   }
 }
-
-/* Tablets / small laptops */
-@media (max-width: 768px) {
-  .header-panel {
-    margin-top: 220px;
-    max-width: 380px;
-    margin-left: auto;
-    margin-right: auto;   /* keep it centered on smaller screens */
-  }
-}
-
-/* Large phones */
-@media (max-width: 576px) {
-  .header-panel {
-    margin-top: 200px;
-    max-width: 340px;
-    padding: 10px 16px 12px;
-  }
-}
-
-/* Small phones */
-@media (max-width: 400px) {
-  .header-panel {
-    margin-top: 185px;
-    max-width: 320px;
-  }
-}
-
 
 /* Keep logo and text on a tighter baseline */
 .logo-lockup {
@@ -954,6 +961,15 @@ body {
 </head>
 <body>
   <div class="page">
+
+    <!-- NEW: Mobile hero image block -->
+  <div class="mobile-hero">
+    <img
+      src="{{ url_for('static', filename='kitchen-hero.png') }}"
+      alt="Annapurna's Kitchen - homemade Indian curries"
+      class="mobile-hero-img"
+    >
+  </div>
 
     <header>
         <div class="header-pill">
