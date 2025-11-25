@@ -514,7 +514,7 @@ body {
 
     .sizes {
       display: grid;
-      grid-template-columns: 2.2fr 1fr 1.1fr;
+      grid-template-columns: 2.2fr 1fr 1.2fr;
       gap: 6px;
       align-items: center;
       font-size: 0.82rem;
@@ -530,15 +530,53 @@ body {
       color: var(--accent-dark);
     }
 
+    .qty-wrapper {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      justify-self: flex-end;
+    }
+
+    .qty-btn {
+      border-radius: 999px;
+      border: 1px solid #d9cebf;
+      background: #f5ede2;
+      color: #5a4b3f;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .qty-btn:hover {
+      background: #ecdcc8;
+    }
+
     .qty-input {
-      width: 70px;
-      padding: 4px 7px;
-      padding-right: 25px; /* Make room for spinner arrows */
+      width: 52px;
+      padding: 4px 6px;
       border-radius: 10px;
       border: 1px solid var(--border);
       font-size: 0.82rem;
       text-align: right;
       background: #fdf8f0;
+    }
+
+    .order-status {
+      font-size: 0.8rem;
+      min-height: 1.2em;
+      margin-top: 6px;
+      color: var(--muted);
+    }
+    .order-status.success {
+      color: #2e7d5b;
+    }
+    .order-status.error {
+      color: #c0392b;
     }
 
     /* Make spinner arrows always visible - Chrome, Safari, Edge */
@@ -1102,6 +1140,7 @@ body {
         <button class="primary" id="whatsappBtn">
           📲 Send Order on WhatsApp
         </button>
+        <p id="orderStatus" class="order-status"></p>
         <p class="small">
           When you click the button, WhatsApp will open with your full order
           pre-filled to <strong>+1 727-967-5878</strong>. Please review and tap
@@ -1376,17 +1415,51 @@ body {
             price.className = "price";
             price.textContent = `$${size.price.toFixed(2)}`;
 
+            const qtyWrapper = document.createElement("div");
+            qtyWrapper.className = "qty-wrapper";
+
+            const minusBtn = document.createElement("button");
+            minusBtn.type = "button";
+            minusBtn.className = "qty-btn";
+            minusBtn.textContent = "−";
+
             const qty = document.createElement("input");
             qty.type = "number";
             qty.min = "0";
+            qty.step = "1";
+            qty.inputMode = "numeric";
             qty.value = "0";
             qty.className = "qty-input";
             qty.dataset.dishId = dish.id;
             qty.dataset.sizeIndex = idx;
 
+            const plusBtn = document.createElement("button");
+            plusBtn.type = "button";
+            plusBtn.className = "qty-btn";
+            plusBtn.textContent = "+";
+
+            qtyWrapper.appendChild(minusBtn);
+            qtyWrapper.appendChild(qty);
+            qtyWrapper.appendChild(plusBtn);
+
+            // Hook up +/- buttons so they work on all devices (including iOS)
+            minusBtn.addEventListener("click", () => {
+              const current = parseInt(qty.value || "0", 10) || 0;
+              const next = Math.max(0, current - 1);
+              qty.value = String(next);
+              updateTotal();
+            });
+
+            plusBtn.addEventListener("click", () => {
+              const current = parseInt(qty.value || "0", 10) || 0;
+              const next = current + 1;
+              qty.value = String(next);
+              updateTotal();
+            });
+
             row.appendChild(label);
             row.appendChild(price);
-            row.appendChild(qty);
+            row.appendChild(qtyWrapper);
             dishDiv.appendChild(row);
           });
 
@@ -1449,6 +1522,17 @@ body {
 
     document.addEventListener("input", (e) => {
       if (e.target.classList.contains("qty-input")) {
+        // Force integer, non-negative quantities only
+        let raw = e.target.value;
+        if (raw === "") {
+          e.target.value = "";
+        } else {
+          let intVal = parseInt(raw, 10);
+          if (isNaN(intVal) || intVal < 0) {
+            intVal = 0;
+          }
+          e.target.value = String(intVal);
+        }
         updateTotal();
       }
     });
@@ -1608,6 +1692,12 @@ body {
  document
   .getElementById("whatsappBtn")
   .addEventListener("click", async function () {
+    const statusEl = document.getElementById("orderStatus");
+    if (statusEl) {
+      statusEl.textContent = "";
+      statusEl.classList.remove("success", "error");
+    }
+
     // 1) Validate required fields
     if (!validateCustomerInfo()) {
       return;
@@ -1617,6 +1707,10 @@ body {
     const items = getSelections();
     if (items.length === 0) {
       alert("Please select at least one item before placing an order.");
+      if (statusEl) {
+        statusEl.textContent = "Please select at least one item before placing an order.";
+        statusEl.classList.add("error");
+      }
       return;
     }
 
@@ -1634,6 +1728,10 @@ body {
         `You selected items from: ${list}.\n` +
         `Please remove those items or order earlier next time.`
       );
+      if (statusEl) {
+        statusEl.textContent = "Some items are past today's cutoff time. Please adjust your selection.";
+        statusEl.classList.add("error");
+      }
       return;
     }
 
@@ -1665,11 +1763,19 @@ body {
         const err = await res.json().catch(() => ({}));
         console.error("Order save failed:", err);
         alert("Something went wrong while saving your order. Please try again.");
+        if (statusEl) {
+          statusEl.textContent = "Error saving your order. Please try again.";
+          statusEl.classList.add("error");
+        }
         return;
       }
     } catch (e) {
       console.error(e);
       alert("Could not reach the server to save your order. Please try again.");
+      if (statusEl) {
+        statusEl.textContent = "Could not reach the server to save your order. Please try again.";
+        statusEl.classList.add("error");
+      }
       return;
     }
 
@@ -1685,6 +1791,18 @@ body {
       const plainText = decodeURIComponent(msg.replace(/%0A/g, "\n"));
       showDesktopModal(plainText);
     }
+
+    // 7) Show success message and reset quantities (but keep contact info)
+    if (statusEl) {
+      statusEl.textContent = "Order saved here. WhatsApp has been opened with your order – please review and tap Send.";
+      statusEl.classList.add("success");
+    }
+
+    // Clear quantities and total so user sees a fresh cart
+    document.querySelectorAll(".qty-input").forEach((input) => {
+      input.value = "0";
+    });
+    updateTotal();
   });
 
     // ====== ADMIN SECTION ======

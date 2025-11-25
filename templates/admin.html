@@ -1071,19 +1071,26 @@ function renderAdminMenuDay(day) {
     const row = document.createElement("div");
     row.className = "menu-item-row";
 
-    const firstSize =
-      item.sizes && item.sizes[0]
-        ? item.sizes[0]
-        : { label: "", price: 0 };
-    const priceNum = Number(firstSize.price || 0);
+    const sizes = Array.isArray(item.sizes) ? item.sizes : [];
+    const primarySize = sizes[0] || { label: "", price: 0 };
+    const primaryPriceNum = Number(primarySize.price || 0);
+    const sizesText = sizes.length
+      ? sizes
+          .map((s) => {
+            const lbl = s.label || "";
+            const p = Number(s.price || 0).toFixed(2);
+            return lbl ? `${lbl} – $${p}` : `$${p}`;
+          })
+          .join(", ")
+      : "No sizes configured";
 
     row.innerHTML = `
       <div class="menu-item-main">
         <div>
           <strong>${item.name || ""}</strong>
           ${
-            firstSize.label
-              ? `<span class="small-muted">${firstSize.label}</span>`
+            primarySize.label
+              ? `<span class="small-muted">${primarySize.label}</span>`
               : ""
           }
         </div>
@@ -1092,19 +1099,46 @@ function renderAdminMenuDay(day) {
             ? `<div class="small">${item.description}</div>`
             : ""
         }
+        <div class="small small-muted">${sizesText}</div>
       </div>
       <div class="menu-item-meta">
-        <div class="small">$${priceNum.toFixed(2)}</div>
+        <div class="small">$${primaryPriceNum.toFixed(2)}</div>
         <div class="menu-item-actions">
-          <button type="button" class="secondary" data-index="${index}">Remove</button>
+          <button type="button" class="secondary" data-addsize="${index}">Add size</button>
+          <button type="button" class="secondary" data-remove="${index}">Remove</button>
         </div>
       </div>
     `;
 
-    const removeBtn = row.querySelector("button[data-index]");
+    const removeBtn = row.querySelector("button[data-remove]");
     if (removeBtn) {
       removeBtn.addEventListener("click", () => {
         adminMenuData[day].splice(index, 1);
+        syncAdminMenuJsonTextarea();
+        renderAdminMenuDay(day);
+      });
+    }
+
+    const addSizeBtn = row.querySelector("button[data-addsize]");
+    if (addSizeBtn) {
+      addSizeBtn.addEventListener("click", () => {
+        const label = (window.prompt("Weight / size label (e.g. 8 oz):", "") || "").trim();
+        if (!label) {
+          return;
+        }
+        const priceStr = window.prompt("Price for " + label + " (e.g. 8.00):", "");
+        const price = parseFloat(priceStr || "");
+        if (!price || price <= 0) {
+          window.alert("Price must be a number greater than 0.");
+          return;
+        }
+        if (!Array.isArray(adminMenuData[day][index].sizes)) {
+          adminMenuData[day][index].sizes = [];
+        }
+        adminMenuData[day][index].sizes.push({
+          label,
+          price
+        });
         syncAdminMenuJsonTextarea();
         renderAdminMenuDay(day);
       });
